@@ -11,7 +11,6 @@ public class ConnectionManager {
         if (con != null) {
         		return con;
         }
-        // get db, user, pass from settings file
         return getDatabaseConnection();
     }
 
@@ -22,7 +21,6 @@ public class ConnectionManager {
         } catch(Exception e) {
             e.printStackTrace();
         }
-
         return con;        
     }
 } 
