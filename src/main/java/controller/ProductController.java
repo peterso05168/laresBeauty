@@ -27,8 +27,8 @@ public class ProductController {
 	
 	@RequestMapping(value = "/shop/category_detail", method = RequestMethod.POST, headers="Accept=application/json")
 	public List<Product> getCategoryProducts(HttpServletRequest request) {
-		String categoryId = request.getParameter("category_id");
-		List<Product> categoryProductList = ProductDAO.getCategoryProducts(Integer.valueOf(categoryId));
+		String productType = request.getParameter("category_id");
+		List<Product> categoryProductList = ProductDAO.getCategoryProducts(productType);
 		//HARDCODED TO TEST API ONLY.
 		Product testingPurpose = new Product();
 		categoryProductList.add(testingPurpose);
