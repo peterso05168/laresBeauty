@@ -11,7 +11,7 @@ public class Product{
 	private BigDecimal productPrice;
 	private String productStatus;
 	private String productType;
-	private Timestamp created_date;
+	private Timestamp createdDate;
 	private Timestamp lastUpdatedDate;
 	
 	public int getProductId() {
@@ -56,11 +56,11 @@ public class Product{
 	public void setProductType(String productType) {
 		this.productType = productType;
 	}
-	public Timestamp getCreated_date() {
-		return created_date;
+	public Timestamp getCreatedDate() {
+		return createdDate;
 	}
-	public void setCreated_date(Timestamp created_date) {
-		this.created_date = created_date;
+	public void setCreatedDate(Timestamp createdDate) {
+		this.createdDate = createdDate;
 	}
 	public Timestamp getLastUpdatedDate() {
 		return lastUpdatedDate;

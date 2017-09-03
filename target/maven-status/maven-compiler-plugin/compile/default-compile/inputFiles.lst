@@ -1,2 +1,6 @@
-/Users/pat/Documents/SpringWorkSpace/laresBeauty/src/main/java/controller/CountryController.java
-/Users/pat/Documents/SpringWorkSpace/laresBeauty/src/main/java/bean/Country.java
+/Users/pat/git/laresBeauty/laresBeauty/src/main/java/connection/ConnectionManager.java
+/Users/pat/git/laresBeauty/laresBeauty/src/main/java/controller/PostController.java
+/Users/pat/git/laresBeauty/laresBeauty/src/main/java/bean/Post.java
+/Users/pat/git/laresBeauty/laresBeauty/src/main/java/dao/ProductDAO.java
+/Users/pat/git/laresBeauty/laresBeauty/src/main/java/bean/Product.java
+/Users/pat/git/laresBeauty/laresBeauty/src/main/java/controller/ProductController.java

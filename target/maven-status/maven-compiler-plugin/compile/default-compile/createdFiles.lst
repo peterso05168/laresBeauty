@@ -1,2 +1,6 @@
-controller/CountryController.class
-bean/Country.class
+controller/PostController.class
+bean/Product.class
+controller/ProductController.class
+connection/ConnectionManager.class
+dao/ProductDAO.class
+bean/Post.class
