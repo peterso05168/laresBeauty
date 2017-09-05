@@ -18,8 +18,6 @@ public class ProductController {
 	public JSONProduct getFeaturedProducts() {
 		List<Product> featuredProductList = ProductDAO.getFeaturedProducts();
 		JSONProduct jsonProduct = new JSONProduct();
-		jsonProduct.setCode("s");
-		jsonProduct.setMessage("");
 		jsonProduct.setData(featuredProductList);
 		return jsonProduct;
 	}

@@ -6,7 +6,7 @@ import bean.Product;
 
 public class JSONProduct{
 	private String code;
-	private String message;
+	private String detail;
 	private List<Product> data;
 	
 	public String getCode() {
@@ -15,11 +15,11 @@ public class JSONProduct{
 	public void setCode(String code) {
 		this.code = code;
 	}
-	public String getMessage() {
-		return message;
+	public String getDetail() {
+		return detail;
 	}
-	public void setMessage(String message) {
-		this.message = message;
+	public void setDetail(String detail) {
+		this.detail = detail;
 	}
 	public List<Product> getData() {
 		return data;
