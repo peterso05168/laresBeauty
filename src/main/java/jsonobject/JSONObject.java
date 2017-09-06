@@ -2,12 +2,10 @@ package jsonobject;
 
 import java.util.List;
 
-import bean.Product;
-
-public class JSONProduct{
+public class JSONObject{
 	private String code;
 	private String detail;
-	private List<Product> data;
+	private List<?> data;
 	
 	public String getCode() {
 		return code;
@@ -21,10 +19,10 @@ public class JSONProduct{
 	public void setDetail(String detail) {
 		this.detail = detail;
 	}
-	public List<Product> getData() {
+	public List<?> getData() {
 		return data;
 	}
-	public void setData(List<Product> data) {
+	public void setData(List<?> data) {
 		this.data = data;
 	}
 }

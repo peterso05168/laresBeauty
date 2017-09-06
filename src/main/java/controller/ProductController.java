@@ -2,8 +2,7 @@ package controller;
 
 import bean.Product;
 import dao.ProductDAO;
-import jsonobject.JSONProduct;
-
+import jsonobject.JSONObject;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
@@ -15,9 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProductController {
  
 	@RequestMapping(value = "/shop/featured", method = RequestMethod.GET, headers="Accept=application/json")
-	public JSONProduct getFeaturedProducts() {
+	public JSONObject getFeaturedProducts() {
 		List<Product> featuredProductList = ProductDAO.getFeaturedProducts();
-		JSONProduct jsonProduct = new JSONProduct();
+		JSONObject jsonProduct = new JSONObject();
 		jsonProduct.setData(featuredProductList);
 		return jsonProduct;
 	}
