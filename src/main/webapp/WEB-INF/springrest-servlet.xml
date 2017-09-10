@@ -20,5 +20,9 @@
   
 <bean id="productDAO" class="dao.ProductDAO">  
 <property name="template" ref="jt"></property>  
+</bean>
+
+<bean id="shoppingDetailDAO" class="dao.ShoppingDetailDAO">  
+<property name="template" ref="jt"></property>  
 </bean>  
 </beans>
