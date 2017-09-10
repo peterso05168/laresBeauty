@@ -48,7 +48,7 @@ public class LoginController {
 				String newSalt2 = newHash.getSalt();
 				System.out.println("newSalt: " + newSalt);
 				System.out.println("newSalt2 " + newSalt2);
-				String token = (rs.getString("user_id") + ":" + newSalt + ":" + newSalt);
+				String token = (rs.getString("user_id") + ":" + newSalt + ":" + newSalt2);
 				String hashedToken = newHash.hash(token, newSalt);
 				PreparedStatement update = con.prepareStatement("UPDATE user_local_auth SET local_access_token = ?, local_expires = ?, last_access_time = ? WHERE user_id = ?;");
 				update.setString(1, hashedToken);
