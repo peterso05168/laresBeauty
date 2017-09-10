@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ProductController {
  
-	@RequestMapping(value = "/shop/featured", method = RequestMethod.GET, headers="Accept=application/json")
+	@RequestMapping(value = "/shop/featured", headers="Accept=application/json")
 	public JSONObject getFeaturedProducts() {
 		List<Product> featuredProductList = ProductDAO.getFeaturedProducts();
 		JSONObject jsonProduct = new JSONObject();

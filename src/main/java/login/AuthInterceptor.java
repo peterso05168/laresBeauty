@@ -3,12 +3,9 @@ package login;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
-import jsonobject.JSONLogin;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -25,6 +22,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 		String[] userInfo = new String[3];
 		boolean auth = false;
 		// extract userID, last access time and access token
+		System.out.println("accessToken:  " + accessToken);
 		if (accessToken != null) {
 			String decryptedToken = Base64Encryption.decryption(accessToken);
 			if (decryptedToken != null) {

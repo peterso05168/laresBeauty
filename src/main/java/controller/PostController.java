@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class PostController {
  
-	@RequestMapping(value = "/posts", method = RequestMethod.GET, headers="Accept=application/json")
+	@RequestMapping(value = "/posts", headers="Accept=application/json")
 	public Post getPosts() {
 		System.out.println("Testing in getPost: " + UserContext.getCurrentUser().getUserId());
 		return new Post();
