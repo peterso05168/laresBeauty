@@ -3,29 +3,92 @@ package controller;
 import bean.Product;
 import dao.ProductDAO;
 import jsonobject.JSONObject;
-import java.util.List;
-import javax.servlet.http.HttpServletRequest;
+import util.CommonUtil;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
  
+@RequestMapping(value = "shop")
+
 @RestController
 public class ProductController {
  
-	@RequestMapping(value = "/shop/featured", method = RequestMethod.GET, headers="Accept=application/json")
+	@Autowired  
+	ProductDAO productDAO;
+	
+	
+	//FOR TESTING PURPOSE
+	@RequestMapping(value = "featured", method = RequestMethod.GET, headers="Accept=application/json")
 	public JSONObject getFeaturedProducts() {
-		List<Product> featuredProductList = ProductDAO.getFeaturedProducts();
-		JSONObject jsonProduct = new JSONObject();
-		jsonProduct.setData(featuredProductList);
-		return jsonProduct;
+		return null;
 	}
 	
-	@RequestMapping(value = "/shop/category_detail", method = RequestMethod.POST, headers="Accept=application/json")
-	public List<Product> getCategoryProducts(HttpServletRequest request) {
-		String productType = request.getParameter("category_id");
-		List<Product> categoryProductList = ProductDAO.getCategoryProducts(productType);
-		return categoryProductList;
+	@RequestMapping(value = "get_product", method = RequestMethod.POST, headers="Accept=application/json")
+	public JSONObject getCategoryProducts(@RequestParam(value = "product_status", defaultValue = "A") String productStatus, 
+											@RequestParam(value = "product_type") String productType) {
+	
+		JSONObject jsonObject = new JSONObject();
+		
+		try {
+			List<Product> categoryProductList = productDAO.getCategoryProducts(productStatus, productType);
+			if (!CommonUtil.isNullOrEmpty(categoryProductList)) {
+					jsonObject.setCode("S");
+					
+					//special handling for result data
+					List<List<Product>> finalDataList = new ArrayList<List<Product>>();
+					List<Product> twoPerData = new ArrayList<Product>();
+					int counter = 0;
+					for (int i = 0; i < categoryProductList.size(); i++, counter++) {
+						twoPerData.add(categoryProductList.get(i));
+						if (counter == 1) {
+							finalDataList.add(twoPerData);
+							twoPerData = new ArrayList<Product>();
+							counter = 0;
+							continue;
+						}
+						if (categoryProductList.size() == 1) {
+							finalDataList.add(twoPerData);
+							continue;
+						}
+					}
+					
+					jsonObject.setData(finalDataList);		
+			}else {
+				jsonObject.setCode("F");
+				jsonObject.setDetail("No result is found.");
+			}
+		}catch(Exception e) {
+			jsonObject.setCode("F");
+			jsonObject.setDetail("Error occured: " + e.getMessage());
+		}
+		
+		return jsonObject;
+	}
+	
+	@RequestMapping(value = "get_product_detail", method = RequestMethod.POST, headers="Accept=application/json")
+	public JSONObject getProductsDetail(@RequestParam(value = "product_id") Integer productId) {
+		JSONObject jsonObject = new JSONObject();
+		try {
+			List<Product> productDetail = productDAO.getProductDetail(productId);
+			if (!CommonUtil.isNullOrEmpty(productDetail)) {
+				jsonObject.setCode("S");
+				jsonObject.setData(productDetail);
+			}else {
+				jsonObject.setCode("F");
+				jsonObject.setDetail("No result is found.");
+			}
+		}catch (Exception e) {
+			jsonObject.setCode("F");
+			jsonObject.setDetail("Error occured: " + e.getMessage());
+		}
+		
+		return jsonObject;
 	}
 	
 }

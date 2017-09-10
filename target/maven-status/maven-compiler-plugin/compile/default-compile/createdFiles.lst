@@ -1,6 +1,7 @@
-controller/PostController.class
 bean/Product.class
 controller/ProductController.class
+jsonobject/JSONObject.class
 connection/ConnectionManager.class
 dao/ProductDAO.class
+controller/PostController.class
 bean/Post.class
