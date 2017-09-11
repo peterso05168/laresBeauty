@@ -76,7 +76,6 @@ public class ShoppingDetailController {
 		return jsonObject;
 	}
 	
-	//TODO: NOT YET COMPLETED
 	@RequestMapping(value = "update_shopping_detail", method = RequestMethod.POST, headers="Accept=application/json")
 	public JSONObject updateShoppingDetail(@RequestParam(value = "user_id") Integer userId, 
 			@RequestParam(value = "product_amend_detail") String productAmendDetail) {
@@ -86,11 +85,42 @@ public class ShoppingDetailController {
 		try {
 			JSONShoppingDetailDTO[] dtoList = mapper.readValue(productAmendDetail, JSONShoppingDetailDTO[].class);
 			for (int i = 0; i < dtoList.length; i++) {
-				successFlag = shoppingDetailDAO.updateShoppingDetail(userId, dtoList[i].getProduct_id(), dtoList[i].getProduct_quantity());
+				successFlag += shoppingDetailDAO.updateShoppingDetail(userId, dtoList[i].getProduct_id(), dtoList[i].getProduct_quantity());
+			}
+			if (successFlag == 0) {
+				jsonObject.setCode("F");
+				jsonObject.setDetail("Update shopping cart failed, possible due to wrong user_id or wrong product_id.");
+			}else {
+				jsonObject.setCode("S");
 			}
 		} catch (Exception e) {
 			jsonObject.setCode("F");
 			jsonObject.setDetail("Fail to update shopping detail due to : " + e.getMessage());
+		}
+		
+		return jsonObject;
+	}
+	
+	@RequestMapping(value = "delete_shopping_detail", method = RequestMethod.POST, headers="Accept=application/json")
+	public JSONObject deleteShoppingDetail(@RequestParam(value = "user_id") Integer userId, 
+			@RequestParam(value = "product_delete_detail") String productDeleteDetail) {
+		JSONObject jsonObject = new JSONObject();
+		ObjectMapper mapper = new ObjectMapper();
+		int successFlag = 0;
+		try {
+			JSONShoppingDetailDTO[] dtoList = mapper.readValue(productDeleteDetail, JSONShoppingDetailDTO[].class);
+			for (int i = 0; i < dtoList.length; i++) {
+				successFlag += shoppingDetailDAO.deleteShoppingDetail(userId, dtoList[i].getProduct_id());
+			}
+			if (successFlag == 0) {
+				jsonObject.setCode("F");
+				jsonObject.setDetail("Delete item failed, possible due to wrong user_id or wrong product_id.");
+			}else {
+				jsonObject.setCode("S");
+			}
+		} catch (Exception e) {
+			jsonObject.setCode("F");
+			jsonObject.setDetail("Fail to delete item due to : " + e.getMessage());
 		}
 		
 		return jsonObject;

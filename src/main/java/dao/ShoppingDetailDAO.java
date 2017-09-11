@@ -89,6 +89,20 @@ public class ShoppingDetailDAO {
 		return successFlag;
 	}
 	
+	public Integer deleteShoppingDetail(final Integer userId, final Integer productId) {  
+		String sqlStr = "UPDATE shopping_detail SET status = 'N' WHERE product_id = ? AND user_id = ? ";
+		
+		int successFlag = template.update(sqlStr, 
+	    		new PreparedStatementSetter() {
+			public void setValues(PreparedStatement preparedStatement) throws SQLException {
+				preparedStatement.setInt(1, productId);
+				preparedStatement.setInt(2, userId);			
+			}
+		});
+		
+		return successFlag;
+	}
+	
 	private static ShoppingDetail setShoppingDetail(ResultSet rs) {
 		ShoppingDetail shoppingDetail = new ShoppingDetail();
 		try {
