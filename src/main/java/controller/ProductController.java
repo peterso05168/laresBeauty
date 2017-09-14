@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
  
-@RequestMapping(value = "shop")
+@RequestMapping(value = "product")
 
 @RestController
 public class ProductController {
