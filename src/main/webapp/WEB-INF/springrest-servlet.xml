@@ -7,6 +7,15 @@
 <mvc:annotation-driven/>
 <context:component-scan base-package="controller" />
  
+<mvc:interceptors>
+    <mvc:interceptor>
+        <mvc:mapping path="/media/*" />
+        <mvc:mapping path="/product/*" />
+        <mvc:mapping path="/shop/*" />
+        <mvc:mapping path="/user/*" />
+        <bean class ="login.AuthInterceptor" />
+    </mvc:interceptor>
+</mvc:interceptors>
 <bean id="ds" class="org.springframework.jdbc.datasource.DriverManagerDataSource">  
   <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"></property>  
   <property name="url" value="jdbc:mysql://localhost/lares_beauty?useSSL=false"></property>  
