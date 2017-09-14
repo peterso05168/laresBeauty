@@ -19,6 +19,7 @@ public class ProductDAO {
 	    this.template = template;  
 	}  
 	
+	//TESTED
 	public List<Product> getCategoryProducts (final String productStatus, final String productType) {  
 		String sqlStr = "SELECT * FROM product WHERE product_status IN ( ?, 'F' )";
 		
@@ -44,6 +45,7 @@ public class ProductDAO {
 		return productList; 
 	} 
 	
+	//TESTED
 	public List<Product> getProductDetail(final Integer productId) {  
 		String sqlStr = "SELECT * FROM product WHERE product_id = ? ";
 		
@@ -63,6 +65,75 @@ public class ProductDAO {
 		return productList; 
 	}  
 	
+	//TESTED
+	public Integer deleteProduct(final Integer productId) {  
+		String sqlStr = "UPDATE product SET product_status = 'N' WHERE product_id = ? ";
+		
+		int successFlag = template.update(sqlStr, 
+	    		new PreparedStatementSetter() {
+			public void setValues(PreparedStatement preparedStatement) throws SQLException {
+				preparedStatement.setInt(1, productId);	
+			}
+		});
+		
+		return successFlag;
+	}
+	
+	//TESTED
+	public List<Product> searchProductByTitle(final String productTitle) {
+		String sqlStr = "SELECT * FROM product WHERE product_title like ? ";
+		
+		List<Product> productList = template.query(sqlStr, 
+		    		new PreparedStatementSetter() {
+		    			public void setValues(PreparedStatement preparedStatement) throws SQLException {
+		    				preparedStatement.setString(1, "%" + productTitle + "%");
+		    			}
+		    		}, 
+		    		new RowMapper<Product>(){  
+		    			public Product mapRow(ResultSet rs, int row) throws SQLException {  
+		    				Product e = setProduct(rs);
+		    				return e;  
+		    			}  
+		    		}); 
+		
+		return productList; 
+	}
+
+	//TESTED
+	public int addProduct(final String productTitle, final String productDesc, final Double productPrice, final String productType) {
+		String sqlStr = "INSERT INTO product (product_title, product_desc, product_price, product_type) VALUES (?, ?, ?, ?) ";
+		
+		int successFlag = template.update(sqlStr, 
+	    		new PreparedStatementSetter() {
+			public void setValues(PreparedStatement preparedStatement) throws SQLException {
+				preparedStatement.setString(1, productTitle);	
+				preparedStatement.setString(2, productDesc);
+				preparedStatement.setDouble(3, productPrice);
+				preparedStatement.setString(4, productType);
+			}
+		});
+		
+		return successFlag;
+	}
+	
+	//TESTED
+	public Integer editProduct(final Integer productId, final String productTitle, final String productDesc, final Double productPrice, final String productType) {
+		String sqlStr = "UPDATE product SET product_title = ?, product_desc = ?, product_type = ?, product_price = ? WHERE product_id = ? ";
+		
+		int successFlag = template.update(sqlStr, 
+	    		new PreparedStatementSetter() {
+			public void setValues(PreparedStatement preparedStatement) throws SQLException {
+				preparedStatement.setString(1, productTitle);
+				preparedStatement.setString(2, productDesc);
+				preparedStatement.setString(3, productType);
+				preparedStatement.setDouble(4, productPrice);
+				preparedStatement.setInt(5, productId);	
+			}
+		});
+		
+		return successFlag;
+	}
+	
 	
 	private static Product setProduct(ResultSet rs) {
 		Product product = new Product();
@@ -81,5 +152,7 @@ public class ProductDAO {
 		}
 		return product;		
 	}
+
+	
 	
 }

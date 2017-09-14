@@ -1,6 +1,5 @@
 package dao;
 
-import bean.Product;
 import bean.ShoppingDetail;
 
 import java.sql.PreparedStatement;
