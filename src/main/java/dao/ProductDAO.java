@@ -100,8 +100,9 @@ public class ProductDAO {
 	}
 
 	//TESTED
-	public int addProduct(final String productTitle, final String productDesc, final Double productPrice, final String productType) {
-		String sqlStr = "INSERT INTO product (product_title, product_desc, product_price, product_type) VALUES (?, ?, ?, ?) ";
+	public int addProduct(final String productTitle, final String productDesc, final Double productPrice, final String productType, 
+			final String productImgName, final String productImg2Name, final String productImg3Name) {
+		String sqlStr = "INSERT INTO product (product_title, product_desc, product_price, product_type, product_img, product_img2, product_img3) VALUES (?, ?, ?, ?, ?, ?, ?) ";
 		
 		int successFlag = template.update(sqlStr, 
 	    		new PreparedStatementSetter() {

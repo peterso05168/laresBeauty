@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,7 +22,7 @@ public class FileDAO {
 	    InputStream inputStream = null;
 	    OutputStream outputStream = null;
 	    MultipartFile file = uploadedFile;
-	    String fileName = file.getOriginalFilename();
+	    String fileName = file.getOriginalFilename() + "_" + UUID.randomUUID();
 	    File newFile = new File(imagesFolder + fileName);
 
         inputStream = file.getInputStream();
@@ -37,7 +38,7 @@ public class FileDAO {
             outputStream.write(bytes, 0, read);
         }
 	    
-	    return newFile.getAbsolutePath();
+	    return fileName;
 	}
 	
 	public byte[] fileDownload(String fileName) throws IOException {
