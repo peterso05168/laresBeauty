@@ -122,7 +122,7 @@ public class ProductController {
 		return jsonObject;
 	}
 	
-	@RequestMapping(value = "search_product_by_title", method = RequestMethod.POST, headers="Accept=application/json")
+	@RequestMapping(value = "search_product_by_title", method = RequestMethod.POST)
 	public JSONObject searchProductByTitle(@RequestParam(value = "product_title") String productTitle) {
 		JSONObject jsonObject = new JSONObject();
 		try {
@@ -142,21 +142,19 @@ public class ProductController {
 		return jsonObject;
 	}
 	
-	@RequestMapping(value = "add_product", method = RequestMethod.POST, headers="Accept=application/json")
+	@RequestMapping(value = "add_product", method = RequestMethod.POST)
 	public JSONObject addProducts(@RequestParam(value = "product_title") String productTitle,
 			@RequestParam(value = "product_desc") String productDesc,
 			@RequestParam(value = "product_price") Double productPrice,
 			@RequestParam(value = "product_type") String productType,
-			@RequestParam("product_img") MultipartFile productImg,
-			@RequestParam("product_img2") MultipartFile productImg2,
-			@RequestParam("product_img3") MultipartFile productImg3) {
+			@RequestParam("product_img") MultipartFile[] productImg) {
 		
 		JSONObject jsonObject = new JSONObject();
 		
 		try {
-			String fileName = new String(fileDAO.fileUpload(productImg));
-			String fileName2 = new String(fileDAO.fileUpload(productImg2));
-			String fileName3 = new String(fileDAO.fileUpload(productImg3));
+			String fileName = new String(fileDAO.fileUpload(productImg[0]));
+			String fileName2 = new String(fileDAO.fileUpload(productImg[1]));
+			String fileName3 = new String(fileDAO.fileUpload(productImg[2]));
 			
 			int successFlag = 0;
 			
@@ -170,7 +168,7 @@ public class ProductController {
 			}
 		} catch (Exception e) {
 			jsonObject.setCode("F");
-			jsonObject.setDetail("Add to delete item due to : " + e.getMessage());
+			jsonObject.setDetail("Add item failed due to : " + e.getMessage());
 		}
 		
 		return jsonObject;

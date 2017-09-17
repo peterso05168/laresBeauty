@@ -111,6 +111,9 @@ public class ProductDAO {
 				preparedStatement.setString(2, productDesc);
 				preparedStatement.setDouble(3, productPrice);
 				preparedStatement.setString(4, productType);
+				preparedStatement.setString(5, productImgName);
+				preparedStatement.setString(6, productImg2Name);
+				preparedStatement.setString(7, productImg3Name);
 			}
 		});
 		
