@@ -12,15 +12,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
 import bean.User;
 import bean.UserAccessToken;
-import bean.UserAddress;
 import bean.UserFacebookAuth;
 import bean.UserLocalAuth;
 
@@ -69,6 +65,10 @@ public class LoginDAO {
 	
 	public Integer updateUserLocalToken(final Integer userId, final String token, final Integer expires,
 			final Timestamp lastAccessTime) {
+		System.out.println("userId: " + userId);
+		System.out.println("token: " + token);
+		System.out.println("expires: " + expires);
+		System.out.println("lastAccessTime: " + lastAccessTime);
 		String sqlStr = "UPDATE user_access_token SET user_local_token = ?, token_expire_time = ?, last_access_time = ? WHERE user_id = ?;";
 		int successFlag = template.update(sqlStr, new PreparedStatementSetter() {
 			public void setValues(PreparedStatement preparedStatement) throws SQLException {
@@ -100,12 +100,12 @@ public class LoginDAO {
 	}
 	
 	public Integer updateUserFacebookToken(final Integer userId,final String fbAccessToken,final Integer fbexpiresIn,final String facebookId) {
-		String sqlStr = "UPDATE user_access_token SET user_local_token = ?, token_expire_time = ?, last_access_time = ? WHERE user_id = ?;";
+		String sqlStr = "UPDATE user_facebook_auth SET facebook_id = ?,facebook_access_token = ?, facebook_expires = ? WHERE user_id = ?;";
           int successFlag = template.update(sqlStr, new PreparedStatementSetter() {
 			public void setValues(PreparedStatement preparedStatement) throws SQLException {
-				preparedStatement.setString(1, fbAccessToken);
-				preparedStatement.setInt(2, fbexpiresIn);
-				preparedStatement.setString(3, facebookId);
+				preparedStatement.setString(1, facebookId);
+				preparedStatement.setString(2, fbAccessToken);
+				preparedStatement.setInt(3, fbexpiresIn);
 				preparedStatement.setInt(4, userId);
 			}
 		});
