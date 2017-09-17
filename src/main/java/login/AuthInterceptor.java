@@ -1,7 +1,12 @@
 package login;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+
+import bean.UserAccessToken;
+import dao.AuthInterceptorDAO;
+import dao.LoginDAO;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -13,12 +18,15 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 public class AuthInterceptor implements HandlerInterceptor {
 
+	@Autowired  
+	AuthInterceptorDAO authInterceptorDAO;
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object o) throws Exception {
 		System.out.println(" Pre handle ");
-		String accessToken = request.getParameter("accessToken");
+		String accessToken = request.getParameter("access_token");
 		String[] userInfo = new String[3];
 		boolean auth = false;
 		// extract userID, last access time and access token
@@ -27,46 +35,36 @@ public class AuthInterceptor implements HandlerInterceptor {
 			String decryptedToken = Base64Encryption.decryption(accessToken);
 			if (decryptedToken != null) {
 				userInfo = decryptedToken.split(":");
+				int userId = Integer.parseInt(userInfo[0]);
+				String token = userInfo[1];
 				// userInfo[0] = user_id, userInfo[1] = local_access_token
 				try {
 					// auth the token
-					Class.forName("com.mysql.cj.jdbc.Driver");
-					Connection con = DriverManager.getConnection(
-							"jdbc:mysql://127.0.0.1:3306/lares_beauty?autoReconnect=true&useSSL=false", "root",
-							"123456");
-					if (con != null) {
-						System.out.println("Connected to the database");
-					}
-					PreparedStatement pstmt = con.prepareStatement(
-							"select * from user_access_token where user_id = ?  and  user_local_token = ?;");
-					pstmt.setString(1, userInfo[0]);
-					pstmt.setString(2, userInfo[1]);
-					ResultSet rs = pstmt.executeQuery();
-					if (rs.next()) {
-						LocalDateTime lastAccess = rs.getTimestamp("last_access_time").toLocalDateTime();
+					List<UserAccessToken> correctTokenRecord = authInterceptorDAO.getUserAccessToken(userId, token);
+					if (correctTokenRecord.size() == 1) {
+						LocalDateTime lastAccess = correctTokenRecord.get(0).getLastAccessTime().toLocalDateTime();
 						LocalDateTime currentAccess = LocalDateTime.now();
 						System.out.println(currentAccess);
 						System.out.println(lastAccess);
 						long time = lastAccess.until(currentAccess, ChronoUnit.SECONDS);
 						System.out.println("time: " + time);
-						int expireTime = rs.getInt("token_expire_time") * 60;
+						int expireTime = correctTokenRecord.get(0).getTokenExpireTime() * 60;
 						if (time > expireTime) {
 							// send timeout msg
 						} else if (time > 0 && time <= expireTime) {
-							auth = true;
 							User user = new User();
-							user.setUserId(rs.getInt("user_id"));
+							user.setUserId(userId);
 							UserContext.current.set(user);
 							// update access time
 								Timestamp now = new Timestamp(System.currentTimeMillis());
-								PreparedStatement update = con.prepareStatement(
-										"UPDATE user_access_token SET last_access_time = ? WHERE user_id = ?;");
-								update.setTimestamp(1, now);
-								update.setString(2, rs.getString("user_id"));
-								update.execute();
+								int successUpdate = authInterceptorDAO.updateLastAccessTime(userId,now);
+								if (successUpdate == 1){
+									auth = true;
+								} else {
+									System.out.println("Cannot Update Access Time");
+								}
 						}
 					}
-					con.close();
 				} catch (Exception e) {
 					System.out.println(e);
 				}

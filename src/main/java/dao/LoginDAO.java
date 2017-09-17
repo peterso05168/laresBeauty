@@ -65,10 +65,6 @@ public class LoginDAO {
 	
 	public Integer updateUserLocalToken(final Integer userId, final String token, final Integer expires,
 			final Timestamp lastAccessTime) {
-		System.out.println("userId: " + userId);
-		System.out.println("token: " + token);
-		System.out.println("expires: " + expires);
-		System.out.println("lastAccessTime: " + lastAccessTime);
 		String sqlStr = "UPDATE user_access_token SET user_local_token = ?, token_expire_time = ?, last_access_time = ? WHERE user_id = ?;";
 		int successFlag = template.update(sqlStr, new PreparedStatementSetter() {
 			public void setValues(PreparedStatement preparedStatement) throws SQLException {
@@ -176,20 +172,6 @@ public class LoginDAO {
 		return user;
 	}
 	
-	private UserAccessToken setUserAccessToken(ResultSet rs) {
-		UserAccessToken userAccessToken = new UserAccessToken();
-		try {
-			userAccessToken.setId(rs.getInt("id"));
-			userAccessToken.setUserId(rs.getInt("user_id"));
-			userAccessToken.setUserLocalToken(rs.getString("user_local_token"));
-			userAccessToken.setTokenExpireTime(rs.getInt("token_expire_time"));
-			userAccessToken.setLastAccessTime(rs.getTimestamp("last_access_time"));
-			
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return userAccessToken;
-	}
 	
 	private UserLocalAuth setUserLocalAuth(ResultSet rs) {
 		UserLocalAuth userLocalAuth = new UserLocalAuth();
