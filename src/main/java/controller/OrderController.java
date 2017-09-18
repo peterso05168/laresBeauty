@@ -25,7 +25,7 @@ public class OrderController {
 	@Autowired  
 	OrderDAO orderDAO;
 	
-	@Transactional("tjtJTransactionManager")
+	@Transactional("tjtJTransactionManager") //This is for transaction control if one insert or update failed, it roll backs.
 	@RequestMapping(value = "add_order", method = RequestMethod.POST)
 	public JSONObject addOrder(@RequestParam(value = "user_id") Integer userId,
 			@RequestParam(value = "user_address_info_id") Integer userAddressInfoId,
