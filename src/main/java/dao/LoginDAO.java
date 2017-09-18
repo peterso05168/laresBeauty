@@ -16,7 +16,6 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
 import bean.User;
-import bean.UserAccessToken;
 import bean.UserFacebookAuth;
 import bean.UserLocalAuth;
 

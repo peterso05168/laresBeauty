@@ -18,6 +18,7 @@ public class FileDAO {
 	    this.imagesFolder = imagesFolder;
 	}
 
+	@SuppressWarnings("resource")
 	public String fileUpload(MultipartFile uploadedFile) throws Exception {
 	    InputStream inputStream = null;
 	    OutputStream outputStream = null;

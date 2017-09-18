@@ -34,6 +34,23 @@ public class ShoppingDetailDAO {
 		return successFlag;
 	}
 	
+	public Integer addShoppingDetailWithOrder(final Integer userId, final Integer productId, final Integer productQuantity, final String status, final Integer orderId) {  
+		String sqlStr = "INSERT INTO shopping_detail (user_id, product_id, product_quantity, status, order_id) VALUES (?, ?, ?, ?, ?) ";
+		
+		int successFlag = template.update(sqlStr, 
+	    		new PreparedStatementSetter() {
+			public void setValues(PreparedStatement preparedStatement) throws SQLException {
+				preparedStatement.setInt(1, userId);
+				preparedStatement.setInt(2, productId);
+				preparedStatement.setInt(3, productQuantity);
+				preparedStatement.setString(4, status);
+				preparedStatement.setInt(5, orderId);
+			}
+		});
+		
+		return successFlag;
+	}
+	
 	public List<ShoppingDetail> checkShoppingDetail(final Integer userId, final Integer productId) {  
 		String sqlStr = "SELECT * FROM shopping_detail WHERE user_id = ? AND product_id = ? AND status <> 'N' ";
 		
@@ -73,7 +90,7 @@ public class ShoppingDetailDAO {
 		return shoppingDetailList; 
 	} 
 	
-	public Integer updateShoppingDetail(final Integer userId, final Integer productId, final Integer productQuantity) {  
+	public Integer updateShoppingDetailQuantity(final Integer userId, final Integer productId, final Integer productQuantity) {  
 		String sqlStr = "UPDATE shopping_detail SET product_quantity = ? WHERE product_id = ? AND user_id = ? ";
 		
 		int successFlag = template.update(sqlStr, 
@@ -82,6 +99,22 @@ public class ShoppingDetailDAO {
 				preparedStatement.setInt(1, productQuantity);
 				preparedStatement.setInt(2, productId);
 				preparedStatement.setInt(3, userId);			
+			}
+		});
+		
+		return successFlag;
+	}
+	
+	public Integer updateShoppingDetailStatus(final Integer userId, final Integer productId, final String status, final Integer orderId) {  
+		String sqlStr = "UPDATE shopping_detail SET status = ?, order_id = ? WHERE product_id = ? AND user_id = ? ";
+		
+		int successFlag = template.update(sqlStr, 
+	    		new PreparedStatementSetter() {
+			public void setValues(PreparedStatement preparedStatement) throws SQLException {
+				preparedStatement.setString(1, status);
+				preparedStatement.setInt(2, orderId);
+				preparedStatement.setInt(3, productId);
+				preparedStatement.setInt(4, userId);			
 			}
 		});
 		

@@ -85,7 +85,7 @@ public class ShoppingDetailController {
 		try {
 			JSONShoppingDetailDTO[] dtoList = mapper.readValue(productAmendDetail, JSONShoppingDetailDTO[].class);
 			for (int i = 0; i < dtoList.length; i++) {
-				successFlag += shoppingDetailDAO.updateShoppingDetail(userId, dtoList[i].getProduct_id(), dtoList[i].getProduct_quantity());
+				successFlag += shoppingDetailDAO.updateShoppingDetailQuantity(userId, dtoList[i].getProduct_id(), dtoList[i].getProduct_quantity());
 			}
 			if (successFlag == 0) {
 				jsonObject.setCode("F");

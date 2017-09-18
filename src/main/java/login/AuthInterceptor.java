@@ -6,15 +6,9 @@ import org.springframework.web.servlet.ModelAndView;
 
 import bean.UserAccessToken;
 import dao.AuthInterceptorDAO;
-import dao.LoginDAO;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;

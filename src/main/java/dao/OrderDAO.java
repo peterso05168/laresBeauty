@@ -1,10 +1,14 @@
 package dao;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementSetter;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 
 public class OrderDAO {
 	JdbcTemplate template;  
@@ -13,19 +17,27 @@ public class OrderDAO {
 	    this.template = template;  
 	} 
 
-	public int addOrder() {
-		String sqlStr = "INSERT INTO product (product_title, product_desc, product_price, product_type) VALUES (?, ?, ?, ?) ";
+	public Integer addOrder(final Integer userId, final Integer userAddressInfoId) throws Exception {
+		final String sqlStr = "INSERT INTO order (user_id, user_address_info_id) VALUES (?, ?) ";
 		
-//		int successFlag = template.update(sqlStr, 
-//	    		new PreparedStatementSetter() {
-//			public void setValues(PreparedStatement preparedStatement) throws SQLException {
-//				preparedStatement.setString(1, productTitle);	
-//				preparedStatement.setString(2, productDesc);
-//				preparedStatement.setDouble(3, productPrice);
-//				preparedStatement.setString(4, productType);
-//			}
-//		});
+		KeyHolder holder = new GeneratedKeyHolder();
 		
-		return 0;
+		int successFlag = template.update(new PreparedStatementCreator() {           
+	        public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+	            PreparedStatement ps = connection.prepareStatement(sqlStr, Statement.RETURN_GENERATED_KEYS);
+	            ps.setInt(1, userId);
+	            ps.setInt(2, userAddressInfoId);
+	            return ps;
+	        }
+	    }, holder);
+		
+		Integer orderId = holder.getKey().intValue();
+		
+		if (successFlag == 0) {
+			throw new Exception("Failed to create order.");
+		}
+		return orderId;
 	}
+	
+
 }

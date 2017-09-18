@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class MediaController {
- //23342
+
 	@RequestMapping(value = "/posts", headers="Accept=application/json")
 	public Post getPosts() {
 		return new Post();
