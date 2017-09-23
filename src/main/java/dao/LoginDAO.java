@@ -61,6 +61,22 @@ public class LoginDAO {
 		return userLocalAuth;
 	}
 	
+	public List<UserLocalAuth> getLocalUserById(final Integer userId) {
+		String sqlStr = "SELECT * FROM user_local_auth WHERE user_id = ?";
+
+		List<UserLocalAuth> userLocalAuth = template.query(sqlStr, new PreparedStatementSetter() {
+			public void setValues(PreparedStatement preparedStatement) throws SQLException {
+				preparedStatement.setInt(1, userId);
+			}
+		}, new RowMapper<UserLocalAuth>() {
+			public UserLocalAuth mapRow(ResultSet rs, int row) throws SQLException {
+				UserLocalAuth e = setUserLocalAuth(rs);
+				return e;
+			}
+		});
+
+		return userLocalAuth;
+	}
 	public List<UserLocalAuth> localAuth(final String username, final String password) {
 		String sqlStr = "SELECT * FROM user_local_auth WHERE username = ? AND password = ?";
 
@@ -125,6 +141,18 @@ public class LoginDAO {
 		return successFlag;
 	}
 	
+	public Integer updateLocalUserPassword(final Integer userId,final String newPassword,final String newSalt) {
+		String sqlStr = "UPDATE user_local_auth SET password = ?,salt = ?WHERE user_id = ?;";
+          int successFlag = template.update(sqlStr, new PreparedStatementSetter() {
+			public void setValues(PreparedStatement preparedStatement) throws SQLException {
+				preparedStatement.setString(1, newPassword);
+				preparedStatement.setString(2, newSalt);
+				preparedStatement.setInt(3, userId);
+			}
+		});
+
+		return successFlag;
+	}
 	public Integer createNewFacebookUser(final String username) {
 		final PreparedStatementCreator psc = new PreparedStatementCreator() {
 			public PreparedStatement createPreparedStatement(final Connection connection) throws SQLException {
@@ -157,14 +185,15 @@ public class LoginDAO {
 		return holder.getKey().intValue();
 	}
 	
-	public Integer createNewUserLocalAuth(final String email,final String password,final int userId) {
+	public Integer createNewUserLocalAuth(final String email,final String password,final int userId,final String salt) {
 		final PreparedStatementCreator psc = new PreparedStatementCreator() {
 			public PreparedStatement createPreparedStatement(final Connection connection) throws SQLException {
-				final PreparedStatement ps = connection.prepareStatement("INSERT INTO user_local_auth (user_id,username,password)VALUES(?,?,?);",
+				final PreparedStatement ps = connection.prepareStatement("INSERT INTO user_local_auth (user_id,username,password,salt)VALUES(?,?,?,?);",
 						Statement.RETURN_GENERATED_KEYS);
 				ps.setInt(1, userId);
 				ps.setString(2, email);
 				ps.setString(3, password);
+				ps.setString(4, salt);
 				return ps;
 			}
 		};
@@ -241,7 +270,7 @@ public class LoginDAO {
 			userLocalAuth.setUserId(rs.getInt("user_id"));
 			userLocalAuth.setUsername(rs.getString("username"));
 			userLocalAuth.setPassword(rs.getString("password"));
-			
+			userLocalAuth.setSalt(rs.getString("salt"));
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

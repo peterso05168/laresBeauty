@@ -58,28 +58,36 @@ public class LoginController {
 			@RequestParam(value = "username") String username, @RequestParam(value = "password") String password) throws IOException, NoSuchAlgorithmException {
 		JSONLogin jsonLogin = new JSONLogin();
 		try {
-			List<UserLocalAuth> userLocalAuth = loginDAO.localAuth(username,password);
-			if (!CommonUtil.isNullOrEmpty(userLocalAuth) && userLocalAuth.size() == 1) {
-				int userId = userLocalAuth.get(0).getUserId();
-				Timestamp lastAccessTime = new Timestamp(System.currentTimeMillis());
-				int expires = 5;
-				TokenHashing newHash = new TokenHashing();
-				String newSalt = newHash.getSalt();
-				String newSalt2 = newHash.getSalt();
-				String token = (userId + ":" + newSalt + ":" + newSalt2);
-				String hashedToken = newHash.hash(token, newSalt);
-				int successFlag = loginDAO.updateUserLocalToken(userId,hashedToken,expires,lastAccessTime);
-				if(successFlag == 1) {
-					// use base64 encryption to generate token for client
-					String rawLocalAccessToken = (userId + ":" + hashedToken);
-					String localAccessToken = Base64Encryption.encryption(rawLocalAccessToken);
-					jsonLogin.setAccessToken(localAccessToken);
-					jsonLogin.setUsername(username);
+			List<UserLocalAuth> getUser = loginDAO.getLocalUser(username);
+			if (!CommonUtil.isNullOrEmpty(getUser) && getUser.size() == 1) {
+				String salt = getUser.get(0).getSalt();
+				String hashedPassword = CommonUtil.SHA512PasswordHash(password, salt);
+                List<UserLocalAuth> userLocalAuth = loginDAO.localAuth(username, hashedPassword);
+				if (!CommonUtil.isNullOrEmpty(userLocalAuth) && userLocalAuth.size() == 1) {
+					int userId = userLocalAuth.get(0).getUserId();
+					Timestamp lastAccessTime = new Timestamp(System.currentTimeMillis());
+					int expires = 5;
+					TokenHashing newHash = new TokenHashing();
+					String newSalt = newHash.getSalt();
+					String newSalt2 = newHash.getSalt();
+					String token = (userId + ":" + newSalt + ":" + newSalt2);
+					String hashedToken = newHash.hash(token, newSalt);
+					
+					int successFlag = loginDAO.updateUserLocalToken(userId, hashedToken, expires, lastAccessTime);
+					if (successFlag == 1) {
+						// use base64 encryption to generate token for client
+						String rawLocalAccessToken = (userId + ":" + hashedToken);
+						String localAccessToken = Base64Encryption.encryption(rawLocalAccessToken);
+						jsonLogin.setAccessToken(localAccessToken);
+						jsonLogin.setUsername(username);
+					} else {
+						jsonLogin.setError("Error: cannot get accesstoken.Please Login again");
+					}
 				} else {
-					jsonLogin.setError("Error: cannot get accesstoken.Please Login again");
+					jsonLogin.setError("Error: Wrong Username or Password");
 				}
 			} else {
-				jsonLogin.setError("Error: Wrong Username or Password");
+				jsonLogin.setError("Error: User not exists");
 			}
 		}catch (Exception e) {
 			jsonLogin.setError("Please Contact Support.Error Message: " + e );
@@ -154,7 +162,7 @@ public class LoginController {
 	@RequestMapping(value = "/localRegister", method = RequestMethod.POST)
 	public JSONRegister localRegister(HttpServletRequest request, HttpServletResponse response,
 			@RequestParam(value = "username") String username, @RequestParam(value = "password") String password,
-			@RequestParam(value = "email") String email,@RequestParam(value = "registration_token" ) String registrationToken) {
+			@RequestParam(value = "email") String email,@RequestParam(value = "registration_token" ) String registrationToken) throws NoSuchAlgorithmException {
 		char[] token = registrationToken.toCharArray();
 		JSONRegister json = new JSONRegister();
 		//13digits token
@@ -174,7 +182,9 @@ public class LoginController {
 				json.setError("Username already exists");
 			} else {
 				int userId = loginDAO.createNewLocalUser(email);
-				int success_local_auth = loginDAO.createNewUserLocalAuth(email, password, userId);
+				String salt = CommonUtil.getSalt();
+				String hashedPassword = CommonUtil.SHA512PasswordHash(password, salt);
+				int success_local_auth = loginDAO.createNewUserLocalAuth(email, hashedPassword, userId, salt);
 				int success_local_token = loginDAO.createNewUserLocalTokenRecord(userId);
 				if (success_local_auth == 1 && success_local_token == 1) {
 					json.setUsername(username);
@@ -213,18 +223,28 @@ public class LoginController {
 	public JSONLogin fbAuth(HttpServletRequest request, HttpServletResponse response) throws JSONException {
 		System.out.println("fbAUTH STARTED ");
 		JSONLogin jsonLogin = new JSONLogin();
-		String code = "";
+		String code = null;
+		String fbAccessToken = null;
+		int fbexpiresIn = 0;
 		code = request.getParameter("code");
 		System.out.println("code: " + code);
 		if (code == null || code.equals("")) {
+			fbAccessToken  = request.getParameter("token");
+			if(fbAccessToken == null || fbAccessToken.equals("")){
 			jsonLogin.setError("Error: cannot get Facebook accesstoken.Please Login again");
+			}
 		} else {
 			FBConnection fbConnection = new FBConnection();
 			JSONObject FBJSON = null;
 			FBJSON = fbConnection.getAccessToken(code);
 			if (FBJSON != null) {
-				String fbAccessToken = FBJSON.getString("access_token");
-				int fbexpiresIn = FBJSON.getInt("expires_in");
+				fbAccessToken = FBJSON.getString("access_token");
+				fbexpiresIn = FBJSON.getInt("expires_in");
+			} else {
+				jsonLogin.setError("Error: cannot decrypt Facebook accesstoken.Please Login again");
+			}
+		}
+		if (code != null || fbAccessToken != null ) {
 				FBGraph fbGraph = new FBGraph(fbAccessToken);
 				String graph = fbGraph.getFBGraph();
 				JSONObject fbProfileData = fbGraph.getGraphData(graph);
@@ -262,7 +282,7 @@ public class LoginController {
 									jsonLogin.setError("Error: cannot get Facebook accesstoken.Please Login again");
 								}
 							} else {
-								jsonLogin.setError("Error: cannot get accesstoken.Please Login again");
+								jsonLogin.setError("Error: cannot get accesstoken(FB).Please Login again");
 							}
 						} else if (CommonUtil.isNullOrEmpty(userFacebookAuth)) {
 							// create new user who logins via Facebook
@@ -414,9 +434,7 @@ public class LoginController {
 				} else {
 					jsonLogin.setError("Error: cannot get Facebook User Detail.Please Login again");
 				}
-			} else {
-				jsonLogin.setError("Error: cannot decrypt Facebook accesstoken.Please Login again");
-			}
+
 		}
 		return jsonLogin;
 	}
