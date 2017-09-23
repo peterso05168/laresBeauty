@@ -1,6 +1,7 @@
 package controller;
 
 import jsonobject.JSONLogin;
+import jsonobject.JSONRegister;
 import login.Base64Encryption;
 import login.FBConnection;
 import login.FBGraph;
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Random;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -19,6 +21,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -36,6 +39,20 @@ public class LoginController {
 	@Autowired  
 	LoginDAO loginDAO;
 	
+	private static final String[] IP_HEADER_CANDIDATES = { 
+		    "X-Forwarded-For",
+		    "Proxy-Client-IP",
+		    "WL-Proxy-Client-IP",
+		    "HTTP_X_FORWARDED_FOR",
+		    "HTTP_X_FORWARDED",
+		    "HTTP_X_CLUSTER_CLIENT_IP",
+		    "HTTP_CLIENT_IP",
+		    "HTTP_FORWARDED_FOR",
+		    "HTTP_FORWARDED",
+		    "HTTP_VIA",
+		    "REMOTE_ADDR" };
+
+
 	@RequestMapping(value = "/localLogin")
 	public JSONLogin localLogin(HttpServletRequest request, HttpServletResponse response,
 			@RequestParam(value = "username") String username, @RequestParam(value = "password") String password) throws IOException, NoSuchAlgorithmException {
@@ -112,12 +129,84 @@ public class LoginController {
 		 return jsonLogin;
 	}
 	
+	@RequestMapping(value = "/registrationRequest")
+	public jsonobject.JSONObject registrationRequest() {
+		//13digits token
+		//1,2,3digit = Reminder(2): 3-digit number divided by 13.(((8-76)*13)+2)
+		//4,5digit is useless;
+		//6,7digit = 2-digit odd number(11-99)
+		//8,9,10,11digit = Reminder(57):4-digit number divided by 83.(((13-120)*83)+57)
+		//12,13digit is garbage;
+		Random rand = new Random();
+		Integer oneTwoThree = ((rand.nextInt(69) + 8) * 13) + 2;
+		Integer fourFive = (rand.nextInt(90) + 10);
+		Integer sixSeven = ((rand.nextInt(45) + 6) * 2) - 1;
+		Integer eightNineTenEleven = ((rand.nextInt(108) + 13) * 83) + 57;
+		Integer twelveThirteen = (rand.nextInt(90) + 30) / 2;
+		String token = oneTwoThree.toString() + fourFive.toString() + sixSeven.toString() + eightNineTenEleven.toString() + twelveThirteen.toString();
+		jsonobject.JSONObject registrationToken = new jsonobject.JSONObject();
+        registrationToken.setCode("s");
+        registrationToken.setDetail(token);
+		return registrationToken;
+	}
+	
+	
+	@RequestMapping(value = "/localRegister", method = RequestMethod.POST)
+	public JSONRegister localRegister(HttpServletRequest request, HttpServletResponse response,
+			@RequestParam(value = "username") String username, @RequestParam(value = "password") String password,
+			@RequestParam(value = "email") String email,@RequestParam(value = "registration_token" ) String registrationToken) {
+		char[] token = registrationToken.toCharArray();
+		JSONRegister json = new JSONRegister();
+		//13digits token
+		//1,2,3digit = Reminder(2): 3-digit number divided by 13.(((8-76)*13)+2)
+		//4,5digit is useless;
+		//6,7digit = 2-digit odd number(11-99)
+		//8,9,10,11digit = Reminder(57):4-digit number divided by 83.(((13-120)*83)+57)
+		//12,13digit is garbage;
+		int oneTwoThree = getInt(token[0]) * 100 + getInt(token[1]) * 10 + getInt(token[2]);
+		int sixSeven = getInt(token[5]) * 10 + getInt(token[6]);
+		int eightNineTenEleven = getInt(token[7]) * 1000 + getInt(token[8]) * 100 + getInt(token[9]) * 10 + getInt(token[10]);
+		if (token.length == 13 && (oneTwoThree % 13) == 2 && (sixSeven % 2) == 1 && (eightNineTenEleven % 83) == 57) {
+			List<UserLocalAuth> localUser = loginDAO.getLocalUser(email);
+			if (!CommonUtil.isNullOrEmpty(localUser)) {
+				json.setUsername(username);
+				json.setRegistration_status(false);
+				json.setError("Username already exists");
+			} else {
+				int userId = loginDAO.createNewLocalUser(email);
+				int success_local_auth = loginDAO.createNewUserLocalAuth(email, password, userId);
+				int success_local_token = loginDAO.createNewUserLocalTokenRecord(userId);
+				if (success_local_auth == 1 && success_local_token == 1) {
+					json.setUsername(username);
+					json.setRegistration_status(true);
+				} else {
+					json.setUsername(username);
+					json.setRegistration_status(false);
+					json.setError("Cannot create user,please try again");
+				}
+			}
+		} else {
+			json.setUsername(username);
+			json.setRegistration_status(false);
+			json.setError("Invalid Token,please try again");
+		}
+		return json;
+	}
+	
 	@RequestMapping(value = "/fbLogin")
 	public void fbLogin(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		System.out.println("fbLogin STARTED ");
+		System.out.println("IP: " + request.getRemoteAddr());
 		FBConnection fbConnection = new FBConnection();
 		String redirectUrl = fbConnection.getFBAuthUrl();
 		response.sendRedirect(redirectUrl);
+		for (String header : IP_HEADER_CANDIDATES) {
+	        String ip = request.getHeader(header);
+	        if (ip != null && ip.length() != 0 && !"unknown".equalsIgnoreCase(ip)) {
+	        	System.out.println("header: " + ip);
+	        }
+	    }
+		System.out.println("IP: " + request.getRemoteAddr());
 	}
 	
 	@RequestMapping(value = "/fbAuth")
@@ -177,7 +266,7 @@ public class LoginController {
 							}
 						} else if (CommonUtil.isNullOrEmpty(userFacebookAuth)) {
 							// create new user who logins via Facebook
-							int newUserId = loginDAO.createNewUser(username);
+							int newUserId = loginDAO.createNewFacebookUser(username);
 							System.out.println("NEW USER: " + newUserId);
 							Timestamp lastAccessTime = new Timestamp(System.currentTimeMillis());
 							int expires = 5;
@@ -332,4 +421,8 @@ public class LoginController {
 		return jsonLogin;
 	}
 	
+	
+	protected int getInt(char c) {
+		return Character.getNumericValue(c);
+	}
 }

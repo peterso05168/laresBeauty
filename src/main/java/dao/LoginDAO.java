@@ -44,6 +44,23 @@ public class LoginDAO {
 		return user;
 	}
 	
+	public List<UserLocalAuth> getLocalUser(final String username) {
+		String sqlStr = "SELECT * FROM user_local_auth WHERE username = ?";
+
+		List<UserLocalAuth> userLocalAuth = template.query(sqlStr, new PreparedStatementSetter() {
+			public void setValues(PreparedStatement preparedStatement) throws SQLException {
+				preparedStatement.setString(1, username);
+			}
+		}, new RowMapper<UserLocalAuth>() {
+			public UserLocalAuth mapRow(ResultSet rs, int row) throws SQLException {
+				UserLocalAuth e = setUserLocalAuth(rs);
+				return e;
+			}
+		});
+
+		return userLocalAuth;
+	}
+	
 	public List<UserLocalAuth> localAuth(final String username, final String password) {
 		String sqlStr = "SELECT * FROM user_local_auth WHERE username = ? AND password = ?";
 
@@ -108,7 +125,7 @@ public class LoginDAO {
 		return successFlag;
 	}
 	
-	public Integer createNewUser(final String username) {
+	public Integer createNewFacebookUser(final String username) {
 		final PreparedStatementCreator psc = new PreparedStatementCreator() {
 			public PreparedStatement createPreparedStatement(final Connection connection) throws SQLException {
 				final PreparedStatement ps = connection.prepareStatement("INSERT INTO user (user_name)VALUES(?);",
@@ -122,6 +139,51 @@ public class LoginDAO {
 		template.update(psc, holder);
 
 		return holder.getKey().intValue();
+	}
+	
+	public Integer createNewLocalUser(final String email) {
+		final PreparedStatementCreator psc = new PreparedStatementCreator() {
+			public PreparedStatement createPreparedStatement(final Connection connection) throws SQLException {
+				final PreparedStatement ps = connection.prepareStatement("INSERT INTO user (user_email)VALUES(?);",
+						Statement.RETURN_GENERATED_KEYS);
+				ps.setString(1, email);
+				return ps;
+			}
+		};
+		final KeyHolder holder = new GeneratedKeyHolder();
+
+		template.update(psc, holder);
+
+		return holder.getKey().intValue();
+	}
+	
+	public Integer createNewUserLocalAuth(final String email,final String password,final int userId) {
+		final PreparedStatementCreator psc = new PreparedStatementCreator() {
+			public PreparedStatement createPreparedStatement(final Connection connection) throws SQLException {
+				final PreparedStatement ps = connection.prepareStatement("INSERT INTO user_local_auth (user_id,username,password)VALUES(?,?,?);",
+						Statement.RETURN_GENERATED_KEYS);
+				ps.setInt(1, userId);
+				ps.setString(2, email);
+				ps.setString(3, password);
+				return ps;
+			}
+		};
+		final KeyHolder holder = new GeneratedKeyHolder();
+
+		int successFlag = template.update(psc, holder);
+
+		return successFlag;
+	}
+	
+	public Integer createNewUserLocalTokenRecord(final Integer userId) {
+		String sqlStr = "INSERT INTO user_access_token (user_id) VALUES (?);";
+		int successFlag = template.update(sqlStr, new PreparedStatementSetter() {
+			public void setValues(PreparedStatement preparedStatement) throws SQLException {
+				preparedStatement.setInt(1, userId);
+			}
+		});
+
+		return successFlag;
 	}
 	
 	public Integer createNewUserLocalToken(final Integer userId, final String token, final Integer expires,

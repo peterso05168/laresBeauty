@@ -2,7 +2,7 @@ package jsonobject;
 
 public class JSONLogin {
 	
-	private String accessToken;
+	private String access_token;
 	
 	private String username;
 	
@@ -21,10 +21,10 @@ public class JSONLogin {
 		this.username = username;
 	}
 	public String getAccessToken() {
-		return accessToken;
+		return access_token;
 	}
 	public void setAccessToken(String accessToken) {
-		this.accessToken = accessToken;
+		this.access_token = accessToken;
 	}
 	
 	
