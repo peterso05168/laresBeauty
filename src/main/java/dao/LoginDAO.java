@@ -153,12 +153,13 @@ public class LoginDAO {
 
 		return successFlag;
 	}
-	public Integer createNewFacebookUser(final String username) {
+	public Integer createNewFacebookUser(final String username,final String email) {
 		final PreparedStatementCreator psc = new PreparedStatementCreator() {
 			public PreparedStatement createPreparedStatement(final Connection connection) throws SQLException {
-				final PreparedStatement ps = connection.prepareStatement("INSERT INTO user (user_name)VALUES(?);",
+				final PreparedStatement ps = connection.prepareStatement("INSERT INTO user (user_name, user_email)VALUES(?,?);",
 						Statement.RETURN_GENERATED_KEYS);
 				ps.setString(1, username);
+				ps.setString(2, email);
 				return ps;
 			}
 		};

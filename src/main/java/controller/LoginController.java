@@ -245,8 +245,10 @@ public class LoginController {
 				String graph = fbGraph.getFBGraph();
 				JSONObject fbProfileData = fbGraph.getGraphData(graph);
 				if (fbProfileData != null) {
+					//extract fb id,name and email
 					String username = fbProfileData.getString("name");
 					String facebookId = fbProfileData.getString("id");
+					String email = fbProfileData.getString("email");
 					// access DB and update data
 					try {
 						List<UserFacebookAuth> userFacebookAuth = loginDAO.getFacebookUser(facebookId);
@@ -287,7 +289,7 @@ public class LoginController {
 							}
 						} else if (CommonUtil.isNullOrEmpty(userFacebookAuth)) {
 							// create new user who logins via Facebook
-							int newUserId = loginDAO.createNewFacebookUser(username);
+							int newUserId = loginDAO.createNewFacebookUser(username, email);
 							System.out.println("NEW USER: " + newUserId);
 							Timestamp lastAccessTime = new Timestamp(System.currentTimeMillis());
 							int expires = 5;
