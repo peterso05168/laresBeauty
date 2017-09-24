@@ -6,13 +6,18 @@ public class JSONLogin {
 	
 	private String username;
 	
-	private String error;
-	
-	public String getError() {
-		return error;
+	private Integer user_id;
+	public String getAccess_token() {
+		return access_token;
 	}
-	public void setError(String error) {
-		this.error = error;
+	public void setAccess_token(String access_token) {
+		this.access_token = access_token;
+	}
+	public Integer getUser_id() {
+		return user_id;
+	}
+	public void setUser_id(Integer user_id) {
+		this.user_id = user_id;
 	}
 	public String getUsername() {
 		return username;
@@ -20,12 +25,7 @@ public class JSONLogin {
 	public void setUsername(String username) {
 		this.username = username;
 	}
-	public String getAccessToken() {
-		return access_token;
-	}
-	public void setAccessToken(String accessToken) {
-		this.access_token = accessToken;
-	}
+
 	
 	
 }

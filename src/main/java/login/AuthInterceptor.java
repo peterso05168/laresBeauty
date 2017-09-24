@@ -6,6 +6,8 @@ import org.springframework.web.servlet.ModelAndView;
 
 import bean.UserAccessToken;
 import dao.AuthInterceptorDAO;
+import util.CommonUtil;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -26,7 +28,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 		// extract userID, last access time and access token
 		System.out.println("accessToken:  " + accessToken);
 		if (accessToken != null) {
-			String decryptedToken = Base64Encryption.decryption(accessToken);
+			String decryptedToken = CommonUtil.base64Decryption(accessToken);
 			if (decryptedToken != null) {
 				userInfo = decryptedToken.split(":");
 				int userId = Integer.parseInt(userInfo[0]);
