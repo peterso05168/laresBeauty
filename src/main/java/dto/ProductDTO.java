@@ -1,20 +1,17 @@
-package bean;
+package dto;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
-public class Product{
+public class ProductDTO{
 	private int productId;
 	private String productTitle;
 	private String productImg;
-	private String productImg2;
-	private String productImg3;
+	private List<ProductImg> detailImgs;
 	private String productDesc;
-	private BigDecimal productPrice;
+	private String productPrice;
 	private String productStatus;
 	private String productType;
-	private Timestamp createdDate;
-	private Timestamp lastUpdatedDate;
 	
 	public int getProductId() {
 		return productId;
@@ -34,17 +31,17 @@ public class Product{
 	public void setProductImg(String productImg) {
 		this.productImg = productImg;
 	}
-	public String getProductImg2() {
-		return productImg2;
+	public List<ProductImg> getDetailImgs() {
+		return detailImgs;
 	}
-	public void setProductImg2(String productImg2) {
-		this.productImg2 = productImg2;
-	}
-	public String getProductImg3() {
-		return productImg3;
-	}
-	public void setProductImg3(String productImg3) {
-		this.productImg3 = productImg3;
+	public void setDetailImgs(List<String> imgList) {
+		List<ProductImg> detailImgs = new ArrayList<ProductImg>();
+		for (String img : imgList) {
+			ProductImg productImg = new ProductImg();
+			productImg.setProductImg(img);
+			detailImgs.add(productImg);
+		}
+		this.detailImgs = detailImgs;
 	}
 	public String getProductDesc() {
 		return productDesc;
@@ -52,10 +49,10 @@ public class Product{
 	public void setProductDesc(String productDesc) {
 		this.productDesc = productDesc;
 	}
-	public BigDecimal getProductPrice() {
+	public String getProductPrice() {
 		return productPrice;
 	}
-	public void setProductPrice(BigDecimal productPrice) {
+	public void setProductPrice(String productPrice) {
 		this.productPrice = productPrice;
 	}
 	public String getProductStatus() {
@@ -70,16 +67,20 @@ public class Product{
 	public void setProductType(String productType) {
 		this.productType = productType;
 	}
-	public Timestamp getCreatedDate() {
-		return createdDate;
+	
+	
+}
+
+class ProductImg {
+	
+	private String productImg;
+
+	public String getProductImg() {
+		return productImg;
 	}
-	public void setCreatedDate(Timestamp createdDate) {
-		this.createdDate = createdDate;
+
+	public void setProductImg(String productImg) {
+		this.productImg = productImg;
 	}
-	public Timestamp getLastUpdatedDate() {
-		return lastUpdatedDate;
-	}
-	public void setLastUpdatedDate(Timestamp lastUpdatedDate) {
-		this.lastUpdatedDate = lastUpdatedDate;
-	}
+	
 }

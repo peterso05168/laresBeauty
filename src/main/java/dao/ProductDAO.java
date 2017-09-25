@@ -144,6 +144,8 @@ public class ProductDAO {
 		try {
 			product.setProductId(rs.getInt("product_id"));
 			product.setProductImg(rs.getString("product_img"));
+			product.setProductImg2(rs.getString("product_img2"));
+			product.setProductImg3(rs.getString("product_img3"));
 			product.setProductDesc(rs.getString("product_desc"));
 			product.setProductPrice(rs.getBigDecimal("product_price"));
 			product.setProductStatus(rs.getString("product_status"));

@@ -1,6 +1,7 @@
 package controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -40,6 +41,7 @@ public class FileController {
 		return jsonObject;
 	}
 	
+	@CrossOrigin
 	@RequestMapping(value = "/download_image", method = RequestMethod.GET)
 	public byte[] downloadFile(@RequestParam("file_name") String fileName) {
 		try {

@@ -3,14 +3,19 @@ package controller;
 import bean.Product;
 import dao.FileDAO;
 import dao.ProductDAO;
+import dto.ProductDTO;
 import jsonobject.JSONObject;
+import jsonobject.JSONProduct;
 import jsonobject.JSONProductDTO;
+import jsonobject.JSONProductDataList;
 import util.CommonUtil;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  
 @RequestMapping(value = "product")
 
+@CrossOrigin
 @RestController
 public class ProductController {
  
@@ -37,35 +43,31 @@ public class ProductController {
 	}
 	
 	@RequestMapping(value = "get_product", method = RequestMethod.POST, headers="Accept=application/json")
-	public JSONObject getCategoryProducts(@RequestParam(value = "product_status", defaultValue = "A") String productStatus, 
+	public JSONProduct getCategoryProducts(@RequestParam(value = "product_status", defaultValue = "A") String productStatus, 
 											@RequestParam(value = "product_type", defaultValue = "F") String productType) {
 	
-		JSONObject jsonObject = new JSONObject();
+		JSONProduct jsonObject = new JSONProduct();
 		
 		try {
 			List<Product> categoryProductList = productDAO.getCategoryProducts(productStatus, productType);
 			if (!CommonUtil.isNullOrEmpty(categoryProductList)) {
 					jsonObject.setCode("S");
 					
-					//special handling for result data
-					List<List<Product>> finalDataList = new ArrayList<List<Product>>();
-					List<Product> twoPerData = new ArrayList<Product>();
-					int counter = 0;
-					for (int i = 0; i < categoryProductList.size(); i++, counter++) {
-						twoPerData.add(categoryProductList.get(i));
-						if (counter == 1) {
-							finalDataList.add(twoPerData);
-							twoPerData = new ArrayList<Product>();
-							counter = 0;
-							continue;
+					JSONProductDataList jsonProductDataList = new JSONProductDataList();
+					List<ProductDTO> productTypeF = new ArrayList<ProductDTO>();
+					List<ProductDTO> productTypeS = new ArrayList<ProductDTO>();
+					
+					for (Product product : categoryProductList) {
+						if (product.getProductType().equals("S")) {
+							productTypeS.add(toDto(product));
 						}
-						if (categoryProductList.size() == 1) {
-							finalDataList.add(twoPerData);
-							continue;
+						if (product.getProductType().equals("F")) {
+							productTypeF.add(toDto(product));
 						}
 					}
-					
-					jsonObject.setData(finalDataList);		
+					jsonProductDataList.setProductTypeF(productTypeF);
+					jsonProductDataList.setProductTypeS(productTypeS);
+					jsonObject.setData(jsonProductDataList);		
 			}else {
 				jsonObject.setCode("F");
 				jsonObject.setDetail("No result is found.");
@@ -74,7 +76,6 @@ public class ProductController {
 			jsonObject.setCode("F");
 			jsonObject.setDetail("Error occured: " + e.getMessage());
 		}
-		
 		return jsonObject;
 	}
 	
@@ -197,6 +198,23 @@ public class ProductController {
 		}
 		
 		return jsonObject;
+	}
+	
+	public ProductDTO toDto(Product product) {
+		ProductDTO productDTO = new ProductDTO();
+		productDTO.setProductId(product.getProductId());
+		productDTO.setProductDesc(product.getProductDesc());
+		productDTO.setProductStatus(product.getProductStatus());
+		productDTO.setProductTitle(product.getProductTitle());
+		productDTO.setProductType(product.getProductType());
+		productDTO.setProductImg(product.getProductImg());
+		List<String> detailImgs = new ArrayList<String>();
+		detailImgs.add(product.getProductImg());
+		detailImgs.add(product.getProductImg2());
+		detailImgs.add(product.getProductImg3());
+		productDTO.setDetailImgs(detailImgs);
+		productDTO.setProductPrice(new DecimalFormat("0.00").format(product.getProductPrice()));
+		return productDTO;
 	}
 	
 }
