@@ -22,10 +22,8 @@ public class FBConnection {
 	public String getFBAuthUrl() {
 		String fbLoginUrl = "";
 		try {
-			fbLoginUrl = "http://www.facebook.com/dialog/oauth?" + "client_id="
-					+ FBConnection.FB_APP_ID + "&redirect_uri="
-					+ URLEncoder.encode(FBConnection.REDIRECT_URI, "UTF-8")
-					+ "&scope=email";
+			fbLoginUrl = "http://www.facebook.com/dialog/oauth?" + "client_id=" + FBConnection.FB_APP_ID
+					+ "&redirect_uri=" + URLEncoder.encode(FBConnection.REDIRECT_URI, "UTF-8") + "&scope=email";
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
@@ -36,10 +34,9 @@ public class FBConnection {
 	public String getFBGraphUrl(String code) {
 		String fbGraphUrl = "";
 		try {
-			fbGraphUrl = "https://graph.facebook.com/oauth/access_token?"
-					+ "client_id=" + FBConnection.FB_APP_ID + "&redirect_uri="
-					+ URLEncoder.encode(FBConnection.REDIRECT_URI, "UTF-8")
-					+ "&client_secret=" + FB_APP_SECRET + "&code=" + code;
+			fbGraphUrl = "https://graph.facebook.com/oauth/access_token?" + "client_id=" + FBConnection.FB_APP_ID
+					+ "&redirect_uri=" + URLEncoder.encode(FBConnection.REDIRECT_URI, "UTF-8") + "&client_secret="
+					+ FB_APP_SECRET + "&code=" + code;
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
@@ -49,7 +46,7 @@ public class FBConnection {
 	public JSONObject getAccessToken(String code) throws JSONException {
 		System.out.println("getAccessKEY started");
 		JSONObject accessTokenJSON = null;
-		//what is [[[ if ("".equals(accessToken)) ]]] for
+		// what is [[[ if ("".equals(accessToken)) ]]] for
 		if ("".equals(accessToken)) {
 			URL fbGraphURL;
 			try {
@@ -63,8 +60,7 @@ public class FBConnection {
 			try {
 				fbConnection = fbGraphURL.openConnection();
 				BufferedReader in;
-				in = new BufferedReader(new InputStreamReader(
-						fbConnection.getInputStream()));
+				in = new BufferedReader(new InputStreamReader(fbConnection.getInputStream()));
 				String inputLine;
 				b = new StringBuffer();
 				while ((inputLine = in.readLine()) != null)
@@ -72,8 +68,7 @@ public class FBConnection {
 				in.close();
 			} catch (IOException e) {
 				e.printStackTrace();
-				throw new RuntimeException("Unable to connect with Facebook "
-						+ e);
+				throw new RuntimeException("Unable to connect with Facebook " + e);
 			}
 			String json = b.toString();
 			System.out.println("JSONFB: " + json);
@@ -81,13 +76,12 @@ public class FBConnection {
 			accessToken = jsonObj.getString("access_token");
 			System.out.println(accessToken);
 			if (accessToken.startsWith("{")) {
-				throw new RuntimeException("ERROR: Access Token Invalid: "
-						+ accessToken);
+				throw new RuntimeException("ERROR: Access Token Invalid: " + accessToken);
 			} else {
 				accessTokenJSON = jsonObj;
 			}
 		}
-		//reset accessToken
+		// reset accessToken
 		accessToken = "";
 		return accessTokenJSON;
 	}

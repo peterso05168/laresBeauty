@@ -33,14 +33,17 @@ public class PaymentController {
 
 	@RequestMapping(value = "/checkout")
 	public JSONObject checkout(HttpServletRequest request, HttpServletResponse response,
-			@RequestParam(value = "price") String price, @RequestParam(value = "stripeToken") String stripeToken) throws AuthenticationException, InvalidRequestException, APIConnectionException, CardException, APIException {
-		// Set your secret key: remember to change this to your live secret key in production
+			@RequestParam(value = "price") String price, @RequestParam(value = "stripeToken") String stripeToken)
+			throws AuthenticationException, InvalidRequestException, APIConnectionException, CardException,
+			APIException {
+		// Set your secret key: remember to change this to your live secret key in
+		// production
 		// See your keys here: https://dashboard.stripe.com/account/apikeys
 		Stripe.apiKey = "sk_test_7SPSsD2SkPABEZlWdqgQaMVa";
 		JSONObject chargeObject = new JSONObject();
 		// Token is created using Stripe.js or Checkout!
 		// Get the payment token ID submitted by the form:
-//		String token = request.getParameter("stripeToken");
+		// String token = request.getParameter("stripeToken");
 
 		// Create a Customer:
 		Map<String, Object> customerParams = new HashMap<String, Object>();
@@ -54,23 +57,26 @@ public class PaymentController {
 		chargeParams.put("currency", "hkd");
 		chargeParams.put("customer", customer.getId());
 		Charge charge = Charge.create(chargeParams);
-		if(charge.getPaid()) {
-			//charge is success and access orderDao
-			chargeObject.setCode("s");;
+		if (charge.getPaid()) {
+			// charge is success and access orderDao
+			chargeObject.setCode("s");
+			;
 			chargeObject.setDetail("charge success");
 		} else {
 			chargeObject.setCode("f");
-			chargeObject.setDetail("charge failed.Error: " + charge.getFailureCode() + " " + charge.getFailureMessage());
+			chargeObject
+					.setDetail("charge failed.Error: " + charge.getFailureCode() + " " + charge.getFailureMessage());
 		}
 
-//		// YOUR CODE: Save the customer ID and other info in a database for later.
-//
-//		// YOUR CODE (LATER): When it's time to charge the customer again, retrieve the customer ID.
-//		Map<String, Object> chargeParams = new HashMap<String, Object>();
-//		chargeParams.put("amount", 1500); // $15.00 this time
-//		chargeParams.put("currency", "hkd");
-//		chargeParams.put("customer", customerId);
-//		Charge charge = Charge.create(chargeParams);
+		// // YOUR CODE: Save the customer ID and other info in a database for later.
+		//
+		// // YOUR CODE (LATER): When it's time to charge the customer again, retrieve
+		// the customer ID.
+		// Map<String, Object> chargeParams = new HashMap<String, Object>();
+		// chargeParams.put("amount", 1500); // $15.00 this time
+		// chargeParams.put("currency", "hkd");
+		// chargeParams.put("customer", customerId);
+		// Charge charge = Charge.create(chargeParams);
 		return chargeObject;
 	}
 }

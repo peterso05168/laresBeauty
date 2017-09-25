@@ -18,8 +18,9 @@ import java.util.List;
 
 public class AuthInterceptor implements HandlerInterceptor {
 
-	@Autowired  
+	@Autowired
 	AuthInterceptorDAO authInterceptorDAO;
+
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object o) throws Exception {
 		System.out.println(" Pre handle ");
 		String accessToken = request.getParameter("access_token");
@@ -52,13 +53,13 @@ public class AuthInterceptor implements HandlerInterceptor {
 							user.setUserId(userId);
 							UserContext.current.set(user);
 							// update access time
-								Timestamp now = new Timestamp(System.currentTimeMillis());
-								int successUpdate = authInterceptorDAO.updateLastAccessTime(userId,now);
-								if (successUpdate == 1){
-									auth = true;
-								} else {
-									System.out.println("Cannot Update Access Time");
-								}
+							Timestamp now = new Timestamp(System.currentTimeMillis());
+							int successUpdate = authInterceptorDAO.updateLastAccessTime(userId, now);
+							if (successUpdate == 1) {
+								auth = true;
+							} else {
+								System.out.println("Cannot Update Access Time");
+							}
 						}
 					}
 				} catch (Exception e) {

@@ -48,7 +48,7 @@ public class UserDAO {
 
 		return successFlag;
 	}
-	
+
 	public Integer changeDefaultUserAddress(final Integer userId, final Integer userAddressInfoId) throws Exception {
 		String sqlStr = "SELECT * FROM user_address_info WHERE user_id = ? AND status = 'S' ";
 
@@ -62,7 +62,7 @@ public class UserDAO {
 				return e;
 			}
 		});
-		
+
 		if (!CommonUtil.isNullOrEmpty(userAddressList)) {
 			sqlStr = "UPDATE user_address_info SET status = 'A' WHERE user_address_info_id = ? ";
 
@@ -71,12 +71,12 @@ public class UserDAO {
 					preparedStatement.setInt(1, userAddressList.get(0).getUserAddressInfoId());
 				}
 			});
-			
+
 			if (successFlag == 0) {
 				throw new Exception("Failed to reset current selected user address to active status.");
 			}
 		}
-		
+
 		sqlStr = "UPDATE user_address_info SET status = ? WHERE user_address_info_id = ? ";
 
 		int successFlag = template.update(sqlStr, new PreparedStatementSetter() {

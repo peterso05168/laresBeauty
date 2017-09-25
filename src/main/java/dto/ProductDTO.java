@@ -3,6 +3,8 @@ package dto;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 public class ProductDTO{
 	private int productId;
 	private String productTitle;
@@ -68,7 +70,10 @@ public class ProductDTO{
 		this.productType = productType;
 	}
 	
-	
+	@Override
+	public String toString() {
+	  return ToStringBuilder.reflectionToString(this);
+	}
 }
 
 class ProductImg {
@@ -81,6 +86,11 @@ class ProductImg {
 
 	public void setProductImg(String productImg) {
 		this.productImg = productImg;
+	}
+	
+	@Override
+	public String toString() {
+	  return ToStringBuilder.reflectionToString(this);
 	}
 	
 }

@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.Map;
 
 public final class CommonUtil {
-	
+
 	public static boolean isNull(Short s) {
 		return s == null;
 	}
@@ -35,7 +35,7 @@ public final class CommonUtil {
 	public static <K, V> boolean isNullOrEmpty(Map<K, V> m) {
 		return m == null || m.isEmpty();
 	}
-	
+
 	public static String SHA512Hashing(String password, String salt) {
 
 		String passwordToHash = password;
@@ -60,39 +60,38 @@ public final class CommonUtil {
 		}
 		return generatedPassword;
 	}
-	public static String SHA256Hashing(String token ,String salt){
-	    
-        String generatedToken = null;
-        try {
-            // Create MessageDigest instance for MD5
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            //Add password bytes to digest
-            md.update(salt.getBytes());
-            //Get the hash's bytes 
-            byte[] bytes = md.digest(token.getBytes());
-            //This bytes[] has bytes in decimal format;
-            //Convert it to hexadecimal format
-            StringBuilder sb = new StringBuilder();
-            for(int i=0; i< bytes.length ;i++)
-            {
-                sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
-            }
-            //Get complete hashed password in hex format
-            generatedToken = sb.toString();
-        } 
-        catch (NoSuchAlgorithmException e) 
-        {
-            e.printStackTrace();
-        }
-    	return generatedToken;
-    }
+
+	public static String SHA256Hashing(String token, String salt) {
+
+		String generatedToken = null;
+		try {
+			// Create MessageDigest instance for MD5
+			MessageDigest md = MessageDigest.getInstance("SHA-256");
+			// Add password bytes to digest
+			md.update(salt.getBytes());
+			// Get the hash's bytes
+			byte[] bytes = md.digest(token.getBytes());
+			// This bytes[] has bytes in decimal format;
+			// Convert it to hexadecimal format
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < bytes.length; i++) {
+				sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
+			}
+			// Get complete hashed password in hex format
+			generatedToken = sb.toString();
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+		return generatedToken;
+	}
+
 	public static String getSalt() throws NoSuchAlgorithmException {
 		SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
 		byte[] salt = new byte[16];
 		sr.nextBytes(salt);
 		return new String(salt);
 	}
-	
+
 	public static String base64Encryption(String rawToken) throws Exception {
 		String encryptedToken = null;
 		try {

@@ -13,7 +13,7 @@ import org.springframework.jdbc.core.RowMapper;
 import bean.UserAccessToken;
 
 public class AuthInterceptorDAO {
-	
+
 	JdbcTemplate template;
 
 	public void setTemplate(JdbcTemplate template) {
@@ -37,8 +37,8 @@ public class AuthInterceptorDAO {
 
 		return userAccessToken;
 	}
-	
-	public Integer updateLastAccessTime(final Integer userId, final Timestamp lastAccessTime){
+
+	public Integer updateLastAccessTime(final Integer userId, final Timestamp lastAccessTime) {
 		String sqlStr = "UPDATE user_access_token SET last_access_time = ? WHERE user_id = ?;";
 		int successFlag = template.update(sqlStr, new PreparedStatementSetter() {
 			public void setValues(PreparedStatement preparedStatement) throws SQLException {
@@ -49,6 +49,7 @@ public class AuthInterceptorDAO {
 
 		return successFlag;
 	}
+
 	private UserAccessToken setUserAccessToken(ResultSet rs) {
 		UserAccessToken userAccessToken = new UserAccessToken();
 		try {
@@ -57,7 +58,7 @@ public class AuthInterceptorDAO {
 			userAccessToken.setUserLocalToken(rs.getString("user_local_token"));
 			userAccessToken.setTokenExpireTime(rs.getInt("token_expire_time"));
 			userAccessToken.setLastAccessTime(rs.getTimestamp("last_access_time"));
-			
+
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

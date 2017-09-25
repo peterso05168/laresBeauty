@@ -15,19 +15,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 import bean.UserAddress;
 import bean.UserLocalAuth;
- 
+
 @RequestMapping(value = "user")
 
 @RestController
 public class UserController {
- 
-	@Autowired  
+
+	@Autowired
 	UserDAO userDAO;
-	
-	@Autowired  
+
+	@Autowired
 	LoginDAO loginDAO;
-	
-	@RequestMapping(value = "get_user_address", method = RequestMethod.POST, headers="Accept=application/json")
+
+	@RequestMapping(value = "get_user_address", method = RequestMethod.POST, headers = "Accept=application/json")
 	public JSONObject getShoppingDetail(@RequestParam(value = "user_id") Integer userId) {
 		JSONObject jsonObject = new JSONObject();
 		try {
@@ -35,19 +35,19 @@ public class UserController {
 			if (!CommonUtil.isNullOrEmpty(userAddressList)) {
 				jsonObject.setCode("S");
 				jsonObject.setData(userAddressList);
-			}else {
+			} else {
 				jsonObject.setCode("F");
 				jsonObject.setDetail("No result is found.");
 			}
-		}catch (Exception e) {
+		} catch (Exception e) {
 			jsonObject.setCode("F");
 			jsonObject.setDetail("Error occured : " + e.getMessage());
 		}
-		
+
 		return jsonObject;
 	}
-	
-	@RequestMapping(value = "delete_user_address", method = RequestMethod.POST, headers="Accept=application/json")
+
+	@RequestMapping(value = "delete_user_address", method = RequestMethod.POST, headers = "Accept=application/json")
 	public JSONObject deleteShoppingDetail(@RequestParam(value = "user_address_info_id") Integer userAddressInfoId) {
 		JSONObject jsonObject = new JSONObject();
 		int successFlag = 0;
@@ -55,20 +55,21 @@ public class UserController {
 			successFlag = userDAO.deleteUserAddress(userAddressInfoId);
 			if (successFlag == 0) {
 				jsonObject.setCode("F");
-				jsonObject.setDetail("Delete item failed, possible due to wrong user_id or wrong user_address_info_id.");
-			}else {
+				jsonObject
+						.setDetail("Delete item failed, possible due to wrong user_id or wrong user_address_info_id.");
+			} else {
 				jsonObject.setCode("S");
 			}
 		} catch (Exception e) {
 			jsonObject.setCode("F");
 			jsonObject.setDetail("Fail to delete item due to : " + e.getMessage());
 		}
-		
+
 		return jsonObject;
 	}
-	
-	@RequestMapping(value = "change_default_user_address", method = RequestMethod.POST, headers="Accept=application/json")
-	public JSONObject changeDefaultUserAddress(@RequestParam(value = "user_id") Integer userId, 
+
+	@RequestMapping(value = "change_default_user_address", method = RequestMethod.POST, headers = "Accept=application/json")
+	public JSONObject changeDefaultUserAddress(@RequestParam(value = "user_id") Integer userId,
 			@RequestParam(value = "user_address_info_id") Integer userAddressInfoId) {
 		JSONObject jsonObject = new JSONObject();
 		int successFlag = 0;
@@ -76,22 +77,23 @@ public class UserController {
 			successFlag = userDAO.changeDefaultUserAddress(userId, userAddressInfoId);
 			if (successFlag == 0) {
 				jsonObject.setCode("F");
-				jsonObject.setDetail("Delete item failed, possible due to wrong user_id or wrong user_address_info_id.");
-			}else {
+				jsonObject
+						.setDetail("Delete item failed, possible due to wrong user_id or wrong user_address_info_id.");
+			} else {
 				jsonObject.setCode("S");
 			}
 		} catch (Exception e) {
 			jsonObject.setCode("F");
 			jsonObject.setDetail("Fail to delete item due to : " + e.getMessage());
 		}
-		
+
 		return jsonObject;
 	}
-	
-	@RequestMapping(value = "changePassword", method = RequestMethod.POST, headers="Accept=application/json")
+
+	@RequestMapping(value = "changePassword", method = RequestMethod.POST, headers = "Accept=application/json")
 	public JSONObject passwordChanging(@RequestParam(value = "user_id") Integer userId,
-			@RequestParam(value = "password") String password,
-			@RequestParam(value = "new_password") String newPassword) throws NoSuchAlgorithmException {
+			@RequestParam(value = "password") String password, @RequestParam(value = "new_password") String newPassword)
+			throws NoSuchAlgorithmException {
 		JSONObject jsonObject = new JSONObject();
 		List<UserLocalAuth> getUser = loginDAO.getLocalUserById(userId);
 		String salt = getUser.get(0).getSalt();

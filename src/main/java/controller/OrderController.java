@@ -12,57 +12,59 @@ import dao.OrderDAO;
 import dao.ShoppingDetailDAO;
 import jsonobject.JSONObject;
 import jsonobject.JSONShoppingDetailDTO;
- 
 
 @RequestMapping(value = "order")
 
 @RestController
 public class OrderController {
-	
-	@Autowired  
+
+	@Autowired
 	ShoppingDetailDAO shoppingDetailDAO;
-	
-	@Autowired  
+
+	@Autowired
 	OrderDAO orderDAO;
-	
-	@Transactional("tjtJTransactionManager") //This is for transaction control if one insert or update failed, it roll backs.
+
+	@Transactional("tjtJTransactionManager") // This is for transaction control if one insert or update failed, it roll
+												// backs.
 	@RequestMapping(value = "add_order", method = RequestMethod.POST)
 	public JSONObject addOrder(@RequestParam(value = "user_id") Integer userId,
 			@RequestParam(value = "user_address_info_id") Integer userAddressInfoId,
 			@RequestParam(value = "shopping_detail") String shoppingDetail) {
-		
+
 		JSONObject jsonObject = new JSONObject();
 		ObjectMapper mapper = new ObjectMapper();
 		try {
 			int orderId = orderDAO.addOrder(userId, userAddressInfoId);
-			
+
 			int successFlag = 0;
-			
+
 			JSONShoppingDetailDTO[] dtoList = mapper.readValue(shoppingDetail, JSONShoppingDetailDTO[].class);
-			//Assume it is from shopping cart
+			// Assume it is from shopping cart
 			for (int i = 0; i < dtoList.length; i++) {
-				successFlag += shoppingDetailDAO.updateShoppingDetailStatus(userId, dtoList[i].getProduct_id(), "P", orderId);
+				successFlag += shoppingDetailDAO.updateShoppingDetailStatus(userId, dtoList[i].getProduct_id(), "P",
+						orderId);
 			}
-			
-			//If update count = 0 -> it is from product detail-> payment directly
+
+			// If update count = 0 -> it is from product detail-> payment directly
 			if (successFlag == 0) {
 				for (int i = 0; i < dtoList.length; i++) {
-					successFlag += shoppingDetailDAO.addShoppingDetailWithOrder(userId, dtoList[i].getProduct_id(), dtoList[i].getProduct_quantity(), "P", orderId);
+					successFlag += shoppingDetailDAO.addShoppingDetailWithOrder(userId, dtoList[i].getProduct_id(),
+							dtoList[i].getProduct_quantity(), "P", orderId);
 				}
 			}
-				
+
 			if (successFlag == 0) {
 				jsonObject.setCode("F");
 				jsonObject.setDetail("Add item failed.");
-			}else {
+			} else {
 				jsonObject.setCode("S");
 			}
 		} catch (Exception e) {
 			jsonObject.setCode("F");
 			jsonObject.setDetail("Add item failed due to : " + e.getMessage());
 		}
-		
+
 		return jsonObject;
 	}
-	
+
 }
