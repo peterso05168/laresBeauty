@@ -11,6 +11,10 @@ public class ShoppingDetail {
 	private String status;
 	private Timestamp createdDate;
 	private Timestamp lastUpdatedDate;
+	// join product table
+	private String productTitle;
+	private String productPrice;
+	private String productImg;
 
 	public Integer getUserId() {
 		return userId;
@@ -58,6 +62,30 @@ public class ShoppingDetail {
 
 	public void setLastUpdatedDate(Timestamp lastUpdatedDate) {
 		this.lastUpdatedDate = lastUpdatedDate;
+	}
+
+	public String getProductTitle() {
+		return productTitle;
+	}
+
+	public void setProductTitle(String productTitle) {
+		this.productTitle = productTitle;
+	}
+
+	public String getProductPrice() {
+		return productPrice;
+	}
+
+	public void setProductPrice(String productPrice) {
+		this.productPrice = productPrice;
+	}
+
+	public String getProductImg() {
+		return productImg;
+	}
+
+	public void setProductImg(String productImg) {
+		this.productImg = productImg;
 	}
 
 	@Override

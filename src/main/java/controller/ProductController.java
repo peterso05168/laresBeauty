@@ -57,10 +57,8 @@ public class ProductController {
 
 		try {
 			List<Product> categoryProductList = productDAO.getCategoryProducts(productStatus, productType);
+			JSONProductDataList jsonProductDataList = new JSONProductDataList();
 			if (!CommonUtil.isNullOrEmpty(categoryProductList)) {
-				jsonObject.setCode("S");
-
-				JSONProductDataList jsonProductDataList = new JSONProductDataList();
 				List<ProductDTO> productTypeF = new ArrayList<ProductDTO>();
 				List<ProductDTO> productTypeS = new ArrayList<ProductDTO>();
 
@@ -74,11 +72,13 @@ public class ProductController {
 				}
 				jsonProductDataList.setProductTypeF(productTypeF);
 				jsonProductDataList.setProductTypeS(productTypeS);
+				jsonObject.setCode("S");
 				jsonObject.setData(jsonProductDataList);
 				logger.info("getCategoryProducts() success with return value = " + jsonProductDataList);
 			} else {
-				jsonObject.setCode("F");
+				jsonObject.setCode("S");
 				jsonObject.setDetail("No result is found.");
+				jsonObject.setData(jsonProductDataList);
 				logger.error("getCategoryProducts() failed with error: no result is found.");
 			}
 		} catch (Exception e) {

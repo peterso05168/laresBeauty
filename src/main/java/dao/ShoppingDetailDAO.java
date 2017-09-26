@@ -1,10 +1,12 @@
 package dao;
 
 import bean.ShoppingDetail;
+import util.CommonUtil;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.util.List;
 
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -51,7 +53,7 @@ public class ShoppingDetailDAO {
 	}
 
 	public List<ShoppingDetail> checkShoppingDetail(final Integer userId, final Integer productId) {
-		String sqlStr = "SELECT * FROM shopping_detail WHERE user_id = ? AND product_id = ? AND status <> 'N' ";
+		String sqlStr = "SELECT * FROM shopping_detail WHERE user_id = ? AND product_id = ? AND status NOT IN ('H', 'N') ";
 
 		List<ShoppingDetail> shoppingDetailList = template.query(sqlStr, new PreparedStatementSetter() {
 			public void setValues(PreparedStatement preparedStatement) throws SQLException {
@@ -69,7 +71,7 @@ public class ShoppingDetailDAO {
 	}
 
 	public List<ShoppingDetail> getShoppingDetail(final Integer userId) {
-		String sqlStr = "SELECT * FROM shopping_detail WHERE user_id = ? AND status <> 'N' ";
+		String sqlStr = "SELECT a.*, b.product_title, b.product_price, b.product_img FROM shopping_detail a join product b WHERE user_id = ? AND status <> 'N' AND a.product_id = b.product_id ";
 
 		List<ShoppingDetail> shoppingDetailList = template.query(sqlStr, new PreparedStatementSetter() {
 			public void setValues(PreparedStatement preparedStatement) throws SQLException {
@@ -137,6 +139,15 @@ public class ShoppingDetailDAO {
 			shoppingDetail.setProductQuantity(rs.getInt("product_quantity"));
 			shoppingDetail.setCreatedDate(rs.getTimestamp("created_date"));
 			shoppingDetail.setLastUpdatedDate(rs.getTimestamp("last_updated_date"));
+			if (!CommonUtil.isNullOrEmpty(rs.getString("product_img"))) {
+				shoppingDetail.setProductImg(rs.getString("product_img"));
+			}
+			if (!CommonUtil.isNullOrEmpty(rs.getString("product_title"))) {
+				shoppingDetail.setProductTitle(rs.getString("product_title"));
+			}
+			if (!CommonUtil.isNullOrEmpty(rs.getBigDecimal("product_price"))) {
+				shoppingDetail.setProductPrice(new DecimalFormat("0.00").format(rs.getBigDecimal("product_price")));
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
