@@ -13,10 +13,6 @@ import util.CommonUtil;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -49,15 +45,13 @@ public class ProductController {
 	}
 
 	@RequestMapping(value = "get_product", method = RequestMethod.POST, headers = "Accept=application/json")
-	public JSONProduct getCategoryProducts(HttpServletRequest request,
-			@RequestParam(value = "product_status", defaultValue = "A") String productStatus,
+	public JSONProduct getCategoryProducts(@RequestParam(value = "product_status", defaultValue = "A") String productStatus,
 			@RequestParam(value = "product_type", defaultValue = "F") String productType) {
 
 		logger.info("getCategoryProducts() started with productStatus = " + productStatus + ", productType = "
 				+ productType);
 
 		JSONProduct jsonObject = new JSONProduct();
-		Map<String, String[]> params = request.getParameterMap();
 	
 		try {
 			List<Product> categoryProductList = productDAO.getCategoryProducts(productStatus, productType);

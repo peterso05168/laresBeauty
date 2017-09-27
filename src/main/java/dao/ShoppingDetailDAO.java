@@ -104,7 +104,7 @@ public class ShoppingDetailDAO {
 
 	public Integer updateShoppingDetailStatus(final Integer userId, final Integer productId, final String status,
 			final Integer orderId) {
-		String sqlStr = "UPDATE shopping_detail SET status = ?, order_id = ? WHERE product_id = ? AND user_id = ? ";
+		String sqlStr = "UPDATE shopping_detail SET status = ?, order_id = ? WHERE product_id = ? AND user_id = ? AND status = 'C'";
 
 		int successFlag = template.update(sqlStr, new PreparedStatementSetter() {
 			public void setValues(PreparedStatement preparedStatement) throws SQLException {
