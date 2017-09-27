@@ -15,6 +15,7 @@ import util.CommonUtil;
 
 @RequestMapping(value = "files")
 
+@CrossOrigin
 @RestController
 public class FileController {
 

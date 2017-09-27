@@ -18,8 +18,8 @@
 <mvc:interceptors>
     <mvc:interceptor>
         <mvc:mapping path="/media/*" />
-        <mvc:mapping path="/shop/*" />
-        <mvc:mapping path="/user/*" />
+      
+        
         <bean class ="login.AuthInterceptor" />
     </mvc:interceptor>
 </mvc:interceptors>
@@ -28,7 +28,7 @@
   <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"></property>  
   <property name="url" value="jdbc:mysql://localhost/lares_beauty?useSSL=false"></property>  
   <property name="username" value="root"></property>  
-  <property name="password" value="123456"></property>  
+  <property name="password" value="hi7rr9dp3mp1"></property>  
 </bean>  
   
 <bean id="jt" class="org.springframework.jdbc.core.JdbcTemplate">  
