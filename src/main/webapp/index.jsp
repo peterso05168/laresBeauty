@@ -185,7 +185,7 @@
 	    }
 	};
 
-	var stripe = Stripe('pk_test_6pRNASCoBOKtIshFeQd4XMUh');
+	var stripe = Stripe('pk_test_CxZOc0T4PeTGij1D0eRuwdAO');
 	var elements = stripe.elements();
 
 	var card = elements.create('card', {

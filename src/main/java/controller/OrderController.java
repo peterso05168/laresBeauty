@@ -6,12 +6,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import dao.OrderDAO;
 import dao.ShoppingDetailDAO;
 import jsonobject.JSONResult;
-import jsonobject.JSONShoppingDetailDTO;
 
 @RequestMapping(value = "order")
 

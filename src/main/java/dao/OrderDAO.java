@@ -18,7 +18,7 @@ public class OrderDAO {
 	}
 
 	public Integer addOrder(final Integer userId, final Integer userAddressInfoId) throws Exception {
-		final String sqlStr = "INSERT INTO order (user_id, user_address_info_id) VALUES (?, ?) ";
+		final String sqlStr = "INSERT INTO order_detail (user_id, user_address_info_id) VALUES (?, ?) ";
 
 		KeyHolder holder = new GeneratedKeyHolder();
 
