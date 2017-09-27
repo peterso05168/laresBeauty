@@ -170,6 +170,21 @@
 </body>
 
 <script>
+	var getUrlParameter = function getUrlParameter(sParam) {
+	    var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+	        sURLVariables = sPageURL.split('&'),
+	        sParameterName,
+	        i;
+	
+	    for (i = 0; i < sURLVariables.length; i++) {
+	        sParameterName = sURLVariables[i].split('=');
+	
+	        if (sParameterName[0] === sParam) {
+	            return sParameterName[1] === undefined ? true : sParameterName[1];
+	        }
+	    }
+	};
+
 	var stripe = Stripe('pk_test_6pRNASCoBOKtIshFeQd4XMUh');
 	var elements = stripe.elements();
 
@@ -253,17 +268,36 @@
 
 	function submit(token) {
 
-		var url = 'http://119.246.135.3:8080/laresBeauty/payment/checkout';
-
-		var params = {
-			token: token,
-			userId: 1
+		var url = 'http://localhost:8080/laresBeauty/payment/checkout';
+		
+		var amend_detail_arr = [];
+		
+		let product_detail = {
+			product_id: 1,
+			product_quantity: 1
 		}
+		amend_detail_arr.push(JSON.stringify(product_detail));
+		amend_detail_arr.push(JSON.stringify(product_detail));
 
-		$.post(url, params, function(data) {
-			console.log(data);
+		var formData = new FormData();    
+		formData.append('user_id', getUrlParameter('user_id'));
+		formData.append('user_address_info_id', getUrlParameter('user_address_info_id'));
+		formData.append('price', getUrlParameter('price'));
+		formData.append('stripeToken', token);
+		formData.append('amend_detail', amend_detail_arr);
+
+		$.ajax({
+		  url: url,
+		  data: formData,
+		  processData: false,
+		  contentType: false,
+		  type: 'POST',
+		  success: function(data){
+		    alert(data);
+		  }
 		});
 	}
+
 </script>
 
 </html>

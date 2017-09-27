@@ -1,8 +1,10 @@
 package controller;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -17,6 +19,7 @@ import com.stripe.exception.APIException;
 import com.stripe.exception.AuthenticationException;
 import com.stripe.exception.CardException;
 import com.stripe.exception.InvalidRequestException;
+import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
 import com.stripe.model.Customer;
 
@@ -33,6 +36,8 @@ import util.CommonUtil;
 @Transactional("tjtJTransactionManager")
 @RestController
 public class PaymentController {
+	
+	private static final Logger logger = Logger.getLogger(PaymentController.class);
 
 	@Autowired
 	LoginDAO loginDAO;
@@ -48,6 +53,8 @@ public class PaymentController {
 			@RequestParam(value = "stripeToken") String stripeToken, @RequestParam(value = "user_id") Integer userId,
 			@RequestParam(value = "user_address_info_id") Integer userAddressInfoId,
 			@RequestParam(value = "amend_detail") String[] productAmendDetail) {
+		
+			logger.info("checkout() start");
 			JSONResult jsonResult = new JSONResult();
 			
 			try {
@@ -62,8 +69,8 @@ public class PaymentController {
 		return jsonResult;
 	}
 
-	private boolean chargeCustomer(int price, String token) throws AuthenticationException, InvalidRequestException,
-			APIConnectionException, CardException, APIException {
+	private boolean chargeCustomer(int price, String token) throws StripeException {
+		logger.info("chargeCustomer() start");
 		// Set your secret key: remember to change this to your live secret key in
 		// production
 		// See your keys here: https://dashboard.stripe.com/account/apikeys
@@ -76,15 +83,30 @@ public class PaymentController {
 		Map<String, Object> customerParams = new HashMap<String, Object>();
 		customerParams.put("email", "ericqwerty0@gmail.com");
 		customerParams.put("source", token);
-		Customer customer = Customer.create(customerParams);
+		Customer customer;
+		try {
+			customer = Customer.create(customerParams);
+		} catch (AuthenticationException | InvalidRequestException | APIConnectionException | CardException
+				| APIException e) {
+			logger.error("chargeCustomer() failed with error: " + e.getMessage()); 
+			throw e;
+		}
 
 		// Charge the Customer instead of the card:
 		Map<String, Object> chargeParams = new HashMap<String, Object>();
 		chargeParams.put("amount", price);
 		chargeParams.put("currency", "hkd");
 		chargeParams.put("customer", customer.getId());
-		Charge charge = Charge.create(chargeParams);
+		Charge charge;
+		try {
+			charge = Charge.create(chargeParams);
+		} catch (AuthenticationException | InvalidRequestException | APIConnectionException | CardException
+				| APIException e) {
+			logger.error("chargeCustomer() failed with error: " + e.getMessage()); 
+			throw e;
+		}
 		if (charge.getPaid()) {
+			logger.info("chargeCustomer() success");
 			return true;
 		}
 
@@ -101,49 +123,69 @@ public class PaymentController {
 	}
 
 	private boolean addOrder(int userId, int userAddressInfoId, String[] amendDetail) throws Exception {
+		logger.info("addOrder() start");
 		ObjectMapper mapper = new ObjectMapper();
 
-		int orderId = orderDAO.addOrder(userId, userAddressInfoId);
+		int orderId;
+		try {
+			orderId = orderDAO.addOrder(userId, userAddressInfoId);
+		} catch (Exception e) {
+			logger.error("addOrder() failed with error: " + e.getMessage());
+			throw e;
+		}
 
 		int successFlag = 0;
 
-		if (!CommonUtil.isNullOrEmpty(amendDetail)) {
-			if (!amendDetail[0].substring(amendDetail[0].length() - 1).equalsIgnoreCase("}")) {
-				String modifiedStr = amendDetail[0] + ", " + amendDetail[1];
-				JSONShoppingDetailDTO dto = mapper.readValue(modifiedStr, JSONShoppingDetailDTO.class);
+		try {
+			if (!CommonUtil.isNullOrEmpty(amendDetail)) {
+				if (!amendDetail[0].substring(amendDetail[0].length() - 1).equalsIgnoreCase("}")) {
+					String modifiedStr = amendDetail[0] + ", " + amendDetail[1];
+					JSONShoppingDetailDTO dto = mapper.readValue(modifiedStr, JSONShoppingDetailDTO.class);
 
-				successFlag += shoppingDetailDAO.updateShoppingDetailStatus(userId, dto.getProduct_id(), "H", orderId);
-			} else {
-				for (int i = 0; i < amendDetail.length; i++) {
-					JSONShoppingDetailDTO dto = mapper.readValue(amendDetail[i], JSONShoppingDetailDTO.class);
+					successFlag += shoppingDetailDAO.updateShoppingDetailStatus(userId, dto.getProduct_id(), "H", orderId);
+				} else {
+					for (int i = 0; i < amendDetail.length; i++) {
+						JSONShoppingDetailDTO dto = mapper.readValue(amendDetail[i], JSONShoppingDetailDTO.class);
 
-					successFlag += shoppingDetailDAO.updateShoppingDetailStatus(userId, dto.getProduct_id(), "H",
-							orderId);
+						successFlag += shoppingDetailDAO.updateShoppingDetailStatus(userId, dto.getProduct_id(), "H",
+								orderId);
+					}
 				}
 			}
+		}catch (IOException e) {
+			logger.error("addOrder() failed with error: " + e.getMessage());
+			throw e;
 		}
-
-		// If update count = 0 -> it is from product detail-> payment directly
-		if (successFlag == 0) {
-			if (!amendDetail[0].substring(amendDetail[0].length() - 1).equalsIgnoreCase("}")) {
-				String modifiedStr = amendDetail[0] + ", " + amendDetail[1];
-				JSONShoppingDetailDTO dto = mapper.readValue(modifiedStr, JSONShoppingDetailDTO.class);
-
-				successFlag += shoppingDetailDAO.addShoppingDetailWithOrder(userId, dto.getProduct_id(),
-						dto.getProduct_quantity(), "H", orderId);
-			} else {
-				for (int i = 0; i < amendDetail.length; i++) {
-					JSONShoppingDetailDTO dto = mapper.readValue(amendDetail[i], JSONShoppingDetailDTO.class);
+		
+		try {
+			// If update count = 0 -> it is from product detail-> payment directly
+			if (successFlag == 0) {
+				if (!amendDetail[0].substring(amendDetail[0].length() - 1).equalsIgnoreCase("}")) {
+					String modifiedStr = amendDetail[0] + ", " + amendDetail[1];
+					JSONShoppingDetailDTO dto = mapper.readValue(modifiedStr, JSONShoppingDetailDTO.class);
 
 					successFlag += shoppingDetailDAO.addShoppingDetailWithOrder(userId, dto.getProduct_id(),
 							dto.getProduct_quantity(), "H", orderId);
+				} else {
+					for (int i = 0; i < amendDetail.length; i++) {
+						JSONShoppingDetailDTO dto = mapper.readValue(amendDetail[i], JSONShoppingDetailDTO.class);
+
+						successFlag += shoppingDetailDAO.addShoppingDetailWithOrder(userId, dto.getProduct_id(),
+								dto.getProduct_quantity(), "H", orderId);
+					}
 				}
 			}
+		}catch (IOException e) {
+			logger.error("addOrder() failed with error: " + e.getMessage());
+			throw e;
 		}
+		
 
 		if (successFlag == 0) {
+			logger.info("addOrder() failed with error: successFlag = 0");
 			return false;
 		} else {
+			logger.info("addOrder() success");
 			return true;
 		}
 
