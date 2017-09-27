@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import dao.FileDAO;
-import jsonobject.JSONObject;
+import jsonobject.JSONResult;
 import util.CommonUtil;
 
 @RequestMapping(value = "files")
@@ -26,9 +26,9 @@ public class FileController {
 	// TESTED, PLEASE CHANGE THE LOCATION CONFIG BEFORE USING IT WHICH LOCATED IN
 	// springrest-servlet.xml
 	@RequestMapping(value = "/upload_image", method = RequestMethod.POST)
-	public JSONObject uploadFile(@RequestParam("file") MultipartFile file) {
+	public JSONResult uploadFile(@RequestParam("file") MultipartFile file) {
 		logger.info("uploadFile() started");
-		JSONObject jsonObject = new JSONObject();
+		JSONResult jsonObject = new JSONResult();
 		try {
 			String uploadedPath = fileDAO.fileUpload(file);
 			if (!CommonUtil.isNullOrEmpty(uploadedPath)) {
@@ -53,8 +53,17 @@ public class FileController {
 	public byte[] downloadFile(@RequestParam("file_name") String fileName) {
 		logger.info("downloadFile() started with fileName = " + fileName);
 		try {
-			logger.info("downloadFile() success");
-			return fileDAO.fileDownload(fileName);
+			if (CommonUtil.isNullOrEmpty(fileName) || fileName.equals("undefined")) {
+				logger.error("downloadFile() failed with error: fileName is null or undefined");
+				throw new Exception("fileName is null or undefined");
+			}
+			byte[] byteArray = fileDAO.fileDownload(fileName);
+			if (!CommonUtil.isNullOrEmpty(byteArray)) {
+				logger.info("downloadFile() success");
+			}else {
+				logger.error("downloadFile() failed, byte array is null");
+			}
+			return byteArray;
 		} catch (Exception e) {
 			logger.error("downloadFile() failed with error: " + e.getMessage());
 			return null;

@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dao.OrderDAO;
 import dao.ShoppingDetailDAO;
-import jsonobject.JSONObject;
+import jsonobject.JSONResult;
 import jsonobject.JSONShoppingDetailDTO;
 
 @RequestMapping(value = "order")
@@ -27,11 +27,11 @@ public class OrderController {
 	@Transactional("tjtJTransactionManager") // This is for transaction control if one insert or update failed, it roll
 												// backs.
 	@RequestMapping(value = "add_order", method = RequestMethod.POST)
-	public JSONObject addOrder(@RequestParam(value = "user_id") Integer userId,
+	public JSONResult addOrder(@RequestParam(value = "user_id") Integer userId,
 			@RequestParam(value = "user_address_info_id") Integer userAddressInfoId,
 			@RequestParam(value = "shopping_detail") String shoppingDetail) {
 
-		JSONObject jsonObject = new JSONObject();
+		JSONResult jsonObject = new JSONResult();
 		ObjectMapper mapper = new ObjectMapper();
 		try {
 			int orderId = orderDAO.addOrder(userId, userAddressInfoId);

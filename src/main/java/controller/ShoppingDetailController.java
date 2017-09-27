@@ -2,7 +2,8 @@ package controller;
 
 import dao.ShoppingDetailDAO;
 import dto.ShoppingDetailDTO;
-import jsonobject.JSONObject;
+import jsonobject.JSONProductDTO;
+import jsonobject.JSONResult;
 import jsonobject.JSONShoppingDetailDTO;
 import util.CommonUtil;
 
@@ -37,18 +38,24 @@ public class ShoppingDetailController {
 	ShoppingDetailDAO shoppingDetailDAO;
 
 	@RequestMapping(value = "add_to_shopping_detail", method = RequestMethod.POST, headers = "Accept=application/json")
-	public JSONObject addShoppingDetail(HttpServletRequest request) {
+	public JSONResult addShoppingDetail(@RequestParam(value = "user_id") Integer userId,
+			@RequestParam(value = "amend_detail") String[] productAmendDetail) {
 		logger.info("addShoppingDetail() started");
-		JSONObject jsonObject = new JSONObject();
+		JSONResult jsonObject = new JSONResult();
+		ObjectMapper mapper = new ObjectMapper();
 		int successFlag = 0;
-		int userId = Integer.valueOf(request.getParameter("user_id"));
-		String productId = request.getParameter("product_detail[product_id]");
-		String productQuantity = request.getParameter("product_detail[product_quantity]");
-		Map<String, String[]> params = request.getParameterMap();
+		
+
 		try {
-			JSONShoppingDetailDTO dto = new JSONShoppingDetailDTO();
-			dto.setProduct_id(Integer.valueOf(productId));
-			dto.setProduct_quantity(Integer.valueOf(productQuantity));
+			JSONShoppingDetailDTO dto = null;
+			for (int i = 0; i < productAmendDetail.length; i++) {
+				dto = mapper.readValue(productAmendDetail[i], JSONShoppingDetailDTO.class);
+			}
+			
+			if (CommonUtil.isNullOrEmpty(dto)) {
+				throw new Exception("amend_detail is null");
+			}
+			
 			List<ShoppingDetail> checkIfAlreadyExisted = shoppingDetailDAO.checkShoppingDetail(userId,
 					dto.getProduct_id());
 			if (checkIfAlreadyExisted.size() > 0) {
@@ -77,9 +84,9 @@ public class ShoppingDetailController {
 	}
 
 	@RequestMapping(value = "get_shopping_detail", method = RequestMethod.POST, headers = "Accept=application/json")
-	public JSONObject getShoppingDetail(@RequestParam(value = "user_id") Integer userId) {
+	public JSONResult getShoppingDetail(@RequestParam(value = "user_id") Integer userId) {
 		logger.info("getShoppingDetail() started with userId = " + userId);
-		JSONObject jsonObject = new JSONObject();
+		JSONResult jsonObject = new JSONResult();
 		try {
 			List<ShoppingDetail> shoppingDetailList = shoppingDetailDAO.getShoppingDetail(userId);
 			List<ShoppingDetailDTO> shoppingDetailDTOlst = new ArrayList<ShoppingDetailDTO>();
@@ -106,26 +113,28 @@ public class ShoppingDetailController {
 	}
 
 	@RequestMapping(value = "update_shopping_detail", method = RequestMethod.POST, headers = "Accept=application/json")
-	public JSONObject updateShoppingDetail(HttpServletRequest request) {
+	public JSONResult updateShoppingDetail(@RequestParam(value = "user_id") Integer userId,
+			@RequestParam(value = "amend_detail") String[] productAmendDetail) {
 		logger.info("updateShoppingDetail() started");
-		JSONObject jsonObject = new JSONObject();
+		JSONResult jsonObject = new JSONResult();
 		ObjectMapper mapper = new ObjectMapper();
 		int successFlag = 0;
-		Map<String, String[]> params = request.getParameterMap();
 		try {
-//			JSONShoppingDetailDTO[] dtoList = mapper.readValue(productAmendDetail, JSONShoppingDetailDTO[].class);
-//			for (int i = 0; i < dtoList.length; i++) {
-//				successFlag += shoppingDetailDAO.updateShoppingDetailQuantity(userId, dtoList[i].getProduct_id(),
-//						dtoList[i].getProduct_quantity());
-//			}
-//			if (successFlag == 0) {
-//				jsonObject.setCode("F");
-//				jsonObject.setDetail("Update shopping cart failed, possible due to wrong user_id or product_id");
-//				logger.error("updateShoppingDetail() failed with error: wrong user_id or product_id");
-//			} else {
-//				jsonObject.setCode("S");
-//				logger.info("updateShoppingDetail() finished");
-//			}
+			for (int i = 0; i < productAmendDetail.length; i++) {
+				JSONShoppingDetailDTO dto = mapper.readValue(productAmendDetail[i], JSONShoppingDetailDTO.class);
+				
+				successFlag += shoppingDetailDAO.updateShoppingDetailQuantity(userId, dto.getProduct_id(),
+						dto.getProduct_quantity());
+			}
+			
+			if (successFlag == 0) {
+				jsonObject.setCode("F");
+				jsonObject.setDetail("Update shopping cart failed, possible due to wrong user_id or product_id");
+				logger.error("updateShoppingDetail() failed with error: wrong user_id or product_id");
+			} else {
+				jsonObject.setCode("S");
+				logger.info("updateShoppingDetail() finished");
+			}
 		} catch (Exception e) {
 			jsonObject.setCode("F");
 			jsonObject.setDetail("Fail to update shopping detail due to : " + e.getMessage());
@@ -136,22 +145,18 @@ public class ShoppingDetailController {
 	}
 
 	@RequestMapping(value = "delete_shopping_detail", method = RequestMethod.POST, headers = "Accept=application/json")
-	public JSONObject deleteShoppingDetail(HttpServletRequest request) {
+	public JSONResult deleteShoppingDetail(@RequestParam(value = "user_id") Integer userId,
+			@RequestParam(value = "amend_detail") String[] productAmendDetail) {
 		logger.info("deleteShoppingDetail() started");
-		JSONObject jsonObject = new JSONObject();
-		
+		JSONResult jsonObject = new JSONResult();
+		ObjectMapper mapper = new ObjectMapper();
 		int successFlag = 0;
-		Map<String, String[]> params = request.getParameterMap();
 		
 		try {
-			int userId = 0;
-			for (Entry<String, String[]> entry : params.entrySet()) {
-			    System.out.println(entry.getKey() + "/" + entry.getValue());
-			    if (entry.getKey().equals("user_id")) {
-			    		userId = Integer.valueOf(entry.getValue()[0]);
-			    		continue;
-			    }
-			    successFlag += shoppingDetailDAO.deleteShoppingDetail(userId, Integer.valueOf(entry.getValue()[0]));
+			for (int i = 0; i < productAmendDetail.length; i++) {
+				JSONProductDTO dto = mapper.readValue(productAmendDetail[i], JSONProductDTO.class);
+				
+				successFlag += shoppingDetailDAO.deleteShoppingDetail(userId, dto.getProduct_id());
 			}
 			
 			if (successFlag == 0) {

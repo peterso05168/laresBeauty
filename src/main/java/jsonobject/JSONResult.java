@@ -2,7 +2,7 @@ package jsonobject;
 
 import java.util.List;
 
-public class JSONObject {
+public class JSONResult {
 	private String code;
 	private String detail;
 	private List<?> data;

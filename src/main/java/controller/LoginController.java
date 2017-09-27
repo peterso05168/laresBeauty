@@ -37,12 +37,12 @@ public class LoginController {
 	LoginDAO loginDAO;
 
 	@RequestMapping(value = "/localLogin")
-	public jsonobject.JSONObject localLogin(HttpServletRequest request, HttpServletResponse response,
+	public jsonobject.JSONResult localLogin(HttpServletRequest request, HttpServletResponse response,
 			@RequestParam(value = "username") String username, @RequestParam(value = "password") String password)
 			throws IOException, NoSuchAlgorithmException {
 		JSONLogin jsonLogin = new JSONLogin();
 		List<JSONLogin> login = new ArrayList<JSONLogin>();
-		jsonobject.JSONObject jsonObject = new jsonobject.JSONObject();
+		jsonobject.JSONResult jsonObject = new jsonobject.JSONResult();
 		try {
 			List<UserLocalAuth> getUser = loginDAO.getLocalUser(username);
 			if (!CommonUtil.isNullOrEmpty(getUser) && getUser.size() == 1) {
@@ -136,7 +136,7 @@ public class LoginController {
 	}
 
 	@RequestMapping(value = "/registrationRequest")
-	public jsonobject.JSONObject registrationRequest() {
+	public jsonobject.JSONResult registrationRequest() {
 		// 13digits token
 		// 1,2,3digit = Reminder(2): 3-digit number divided by 13.(((8-76)*13)+2)
 		// 4,5digit is useless;
@@ -151,21 +151,21 @@ public class LoginController {
 		Integer twelveThirteen = (rand.nextInt(90) + 30) / 2;
 		String token = oneTwoThree.toString() + fourFive.toString() + sixSeven.toString()
 				+ eightNineTenEleven.toString() + twelveThirteen.toString();
-		jsonobject.JSONObject registrationToken = new jsonobject.JSONObject();
+		jsonobject.JSONResult registrationToken = new jsonobject.JSONResult();
 		registrationToken.setCode("s");
 		registrationToken.setDetail(token);
 		return registrationToken;
 	}
 
 	@RequestMapping(value = "/localRegister", method = RequestMethod.POST)
-	public jsonobject.JSONObject localRegister(HttpServletRequest request, HttpServletResponse response,
+	public jsonobject.JSONResult localRegister(HttpServletRequest request, HttpServletResponse response,
 			@RequestParam(value = "username") String username, @RequestParam(value = "password") String password,
 			@RequestParam(value = "email") String email,
 			@RequestParam(value = "registration_token") String registrationToken) throws NoSuchAlgorithmException {
 		char[] token = registrationToken.toCharArray();
 		JSONRegister json = new JSONRegister();
 		List<JSONRegister> register = new ArrayList<JSONRegister>();
-		jsonobject.JSONObject jsonObject = new jsonobject.JSONObject();
+		jsonobject.JSONResult jsonObject = new jsonobject.JSONResult();
 		// 13digits token
 		// 1,2,3digit = Reminder(2): 3-digit number divided by 13.(((8-76)*13)+2)
 		// 4,5digit is useless;
@@ -217,11 +217,11 @@ public class LoginController {
 	}
 
 	@RequestMapping(value = "/fbAuth")
-	public jsonobject.JSONObject fbAuth(HttpServletRequest request, HttpServletResponse response) throws JSONException {
+	public jsonobject.JSONResult fbAuth(HttpServletRequest request, HttpServletResponse response) throws JSONException {
 		System.out.println("fbAUTH STARTED ");
 		JSONLogin jsonLogin = new JSONLogin();
 		List<JSONLogin> login = new ArrayList<JSONLogin>();
-		jsonobject.JSONObject jsonObject = new jsonobject.JSONObject();
+		jsonobject.JSONResult jsonObject = new jsonobject.JSONResult();
 		String code = null;
 		String fbAccessToken = null;
 		int fbexpiresIn = 0;

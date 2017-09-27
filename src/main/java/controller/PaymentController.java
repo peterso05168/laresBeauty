@@ -22,7 +22,7 @@ import com.stripe.model.Charge;
 import com.stripe.model.Customer;
 
 import dao.LoginDAO;
-import jsonobject.JSONObject;
+import jsonobject.JSONResult;
 
 @RequestMapping(value = "payment")
 
@@ -34,7 +34,7 @@ public class PaymentController {
 	LoginDAO loginDAO;
 
 	@RequestMapping(value = "/checkout")
-	public JSONObject checkout(HttpServletRequest request, HttpServletResponse response,
+	public JSONResult checkout(HttpServletRequest request, HttpServletResponse response,
 			@RequestParam(value = "price") String price, @RequestParam(value = "stripeToken") String stripeToken)
 			throws AuthenticationException, InvalidRequestException, APIConnectionException, CardException,
 			APIException {
@@ -42,7 +42,7 @@ public class PaymentController {
 		// production
 		// See your keys here: https://dashboard.stripe.com/account/apikeys
 		Stripe.apiKey = "sk_test_7SPSsD2SkPABEZlWdqgQaMVa";
-		JSONObject chargeObject = new JSONObject();
+		JSONResult chargeObject = new JSONResult();
 		// Token is created using Stripe.js or Checkout!
 		// Get the payment token ID submitted by the form:
 		// String token = request.getParameter("stripeToken");

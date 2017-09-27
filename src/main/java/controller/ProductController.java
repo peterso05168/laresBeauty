@@ -4,7 +4,7 @@ import bean.Product;
 import dao.FileDAO;
 import dao.ProductDAO;
 import dto.ProductDTO;
-import jsonobject.JSONObject;
+import jsonobject.JSONResult;
 import jsonobject.JSONProduct;
 import jsonobject.JSONProductDTO;
 import jsonobject.JSONProductDataList;
@@ -13,6 +13,9 @@ import util.CommonUtil;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,12 +44,12 @@ public class ProductController {
 
 	// FOR TESTING PURPOSE
 	@RequestMapping(value = "featured", method = RequestMethod.GET, headers = "Accept=application/json")
-	public JSONObject getFeaturedProducts() {
+	public JSONResult getFeaturedProducts() {
 		return null;
 	}
 
 	@RequestMapping(value = "get_product", method = RequestMethod.POST, headers = "Accept=application/json")
-	public JSONProduct getCategoryProducts(
+	public JSONProduct getCategoryProducts(HttpServletRequest request,
 			@RequestParam(value = "product_status", defaultValue = "A") String productStatus,
 			@RequestParam(value = "product_type", defaultValue = "F") String productType) {
 
@@ -54,7 +57,8 @@ public class ProductController {
 				+ productType);
 
 		JSONProduct jsonObject = new JSONProduct();
-
+		Map<String, String[]> params = request.getParameterMap();
+	
 		try {
 			List<Product> categoryProductList = productDAO.getCategoryProducts(productStatus, productType);
 			JSONProductDataList jsonProductDataList = new JSONProductDataList();
@@ -90,11 +94,11 @@ public class ProductController {
 	}
 
 	@RequestMapping(value = "get_product_detail", method = RequestMethod.POST, headers = "Accept=application/json")
-	public JSONObject getProductsDetail(@RequestParam(value = "product_id") Integer productId) {
+	public JSONResult getProductsDetail(@RequestParam(value = "product_id") Integer productId) {
 
 		logger.info("getProductsDetail() started with productId = " + productId);
 
-		JSONObject jsonObject = new JSONObject();
+		JSONResult jsonObject = new JSONResult();
 		try {
 			List<Product> productDetail = productDAO.getProductDetail(productId);
 			if (!CommonUtil.isNullOrEmpty(productDetail)) {
@@ -116,9 +120,9 @@ public class ProductController {
 	}
 
 	@RequestMapping(value = "delete_product", method = RequestMethod.POST, headers = "Accept=application/json")
-	public JSONObject deleteProducts(@RequestParam(value = "product_id") String productId) {
+	public JSONResult deleteProducts(@RequestParam(value = "product_id") String productId) {
 		logger.info("deleteProducts() started with productId = " + productId);
-		JSONObject jsonObject = new JSONObject();
+		JSONResult jsonObject = new JSONResult();
 		ObjectMapper mapper = new ObjectMapper();
 		int successFlag = 0;
 		try {
@@ -144,9 +148,9 @@ public class ProductController {
 	}
 
 	@RequestMapping(value = "search_product_by_title", method = RequestMethod.POST)
-	public JSONObject searchProductByTitle(@RequestParam(value = "product_title") String productTitle) {
+	public JSONResult searchProductByTitle(@RequestParam(value = "product_title") String productTitle) {
 		logger.info("searchProductByTitle() started with productTitle = " + productTitle);
-		JSONObject jsonObject = new JSONObject();
+		JSONResult jsonObject = new JSONResult();
 		try {
 			List<Product> productList = productDAO.searchProductByTitle(productTitle);
 			if (!CommonUtil.isNullOrEmpty(productList)) {
@@ -168,7 +172,7 @@ public class ProductController {
 	}
 
 	@RequestMapping(value = "add_product", method = RequestMethod.POST)
-	public JSONObject addProducts(@RequestParam(value = "product_title") String productTitle,
+	public JSONResult addProducts(@RequestParam(value = "product_title") String productTitle,
 			@RequestParam(value = "product_desc") String productDesc,
 			@RequestParam(value = "product_price") Double productPrice,
 			@RequestParam(value = "product_type") String productType,
@@ -177,7 +181,7 @@ public class ProductController {
 		logger.info("addProducts() started with productTitle = " + productTitle + ", productDesc = " + productDesc
 				+ ", productPrice = " + productPrice + ", productType = " + productType + ", productImg = "
 				+ productImg);
-		JSONObject jsonObject = new JSONObject();
+		JSONResult jsonObject = new JSONResult();
 
 		try {
 			String fileName = new String(fileDAO.fileUpload(productImg[0]));
@@ -207,7 +211,7 @@ public class ProductController {
 	}
 
 	@RequestMapping(value = "edit_product", method = RequestMethod.POST, headers = "Accept=application/json")
-	public JSONObject editProducts(@RequestParam(value = "product_id") Integer productId,
+	public JSONResult editProducts(@RequestParam(value = "product_id") Integer productId,
 			@RequestParam(value = "product_title") String productTitle,
 			@RequestParam(value = "product_desc") String productDesc,
 			@RequestParam(value = "product_price") Double productPrice,
@@ -215,7 +219,7 @@ public class ProductController {
 		logger.info("editProducts() started with productId = " + productId + ", productTitle = " + productTitle
 				+ ", productDesc = " + productDesc + ", productPrice = " + productPrice + ", productType = "
 				+ productType);
-		JSONObject jsonObject = new JSONObject();
+		JSONResult jsonObject = new JSONResult();
 		int successFlag = 0;
 		try {
 			successFlag += productDAO.editProduct(productId, productTitle, productDesc, productPrice, productType);
