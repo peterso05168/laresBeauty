@@ -39,7 +39,7 @@ public class ShoppingDetailController {
 
 	@RequestMapping(value = "add_to_shopping_detail", method = RequestMethod.POST, headers = "Accept=application/json")
 	public JSONResult addShoppingDetail(@RequestParam(value = "user_id") Integer userId,
-			@RequestParam(value = "amend_detail") String[] productAmendDetail) {
+			@RequestParam(value = "amend_detail") String productAmendDetail) {
 		logger.info("addShoppingDetail() started");
 		JSONResult jsonObject = new JSONResult();
 		ObjectMapper mapper = new ObjectMapper();
@@ -48,10 +48,8 @@ public class ShoppingDetailController {
 
 		try {
 			JSONShoppingDetailDTO dto = null;
-			for (int i = 0; i < productAmendDetail.length; i++) {
-				dto = mapper.readValue(productAmendDetail[i], JSONShoppingDetailDTO.class);
-			}
-			
+			dto = mapper.readValue(productAmendDetail, JSONShoppingDetailDTO.class);
+	
 			if (CommonUtil.isNullOrEmpty(dto)) {
 				throw new Exception("amend_detail is null");
 			}
@@ -114,18 +112,29 @@ public class ShoppingDetailController {
 
 	@RequestMapping(value = "update_shopping_detail", method = RequestMethod.POST, headers = "Accept=application/json")
 	public JSONResult updateShoppingDetail(@RequestParam(value = "user_id") Integer userId,
-			@RequestParam(value = "amend_detail") String[] productAmendDetail) {
+			@RequestParam(value = "amend_detail") String[] productAmendDetailArray) {
 		logger.info("updateShoppingDetail() started");
 		JSONResult jsonObject = new JSONResult();
 		ObjectMapper mapper = new ObjectMapper();
 		int successFlag = 0;
 		try {
-			for (int i = 0; i < productAmendDetail.length; i++) {
-				JSONShoppingDetailDTO dto = mapper.readValue(productAmendDetail[i], JSONShoppingDetailDTO.class);
-				
-				successFlag += shoppingDetailDAO.updateShoppingDetailQuantity(userId, dto.getProduct_id(),
-						dto.getProduct_quantity());
+			if (!CommonUtil.isNullOrEmpty(productAmendDetailArray)) {
+				if (!productAmendDetailArray[0].substring(productAmendDetailArray[0].length() - 1).equalsIgnoreCase("}")) {
+					String modifiedStr = productAmendDetailArray[0] + ", " + productAmendDetailArray[1];
+					JSONShoppingDetailDTO dto = mapper.readValue(modifiedStr, JSONShoppingDetailDTO.class);
+					
+					successFlag += shoppingDetailDAO.updateShoppingDetailQuantity(userId, dto.getProduct_id(),
+							dto.getProduct_quantity());
+				}else {
+					for (int i = 0; i < productAmendDetailArray.length; i++) {
+						JSONShoppingDetailDTO dto = mapper.readValue(productAmendDetailArray[i], JSONShoppingDetailDTO.class);
+						
+						successFlag += shoppingDetailDAO.updateShoppingDetailQuantity(userId, dto.getProduct_id(),
+								dto.getProduct_quantity());
+					}
+				}				
 			}
+			
 			
 			if (successFlag == 0) {
 				jsonObject.setCode("F");
@@ -153,11 +162,21 @@ public class ShoppingDetailController {
 		int successFlag = 0;
 		
 		try {
-			for (int i = 0; i < productAmendDetail.length; i++) {
-				JSONProductDTO dto = mapper.readValue(productAmendDetail[i], JSONProductDTO.class);
-				
-				successFlag += shoppingDetailDAO.deleteShoppingDetail(userId, dto.getProduct_id());
+			if (!CommonUtil.isNullOrEmpty(productAmendDetail)) {
+				if (!productAmendDetail[0].substring(productAmendDetail[0].length() - 1).equalsIgnoreCase("}")) {
+					String modifiedStr = productAmendDetail[0] + ", " + productAmendDetail[1];
+					JSONProductDTO dto = mapper.readValue(modifiedStr, JSONProductDTO.class);
+					
+					successFlag += shoppingDetailDAO.deleteShoppingDetail(userId, dto.getProduct_id());
+				}else {
+					for (int i = 0; i < productAmendDetail.length; i++) {
+						JSONProductDTO dto = mapper.readValue(productAmendDetail[i], JSONProductDTO.class);
+						
+						successFlag += shoppingDetailDAO.deleteShoppingDetail(userId, dto.getProduct_id());
+					}
+				}				
 			}
+			
 			
 			if (successFlag == 0) {
 				jsonObject.setCode("F");

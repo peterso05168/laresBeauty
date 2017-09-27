@@ -162,7 +162,7 @@ public class UserController {
 			}
 		} catch (Exception e) {
 			jsonObject.setCode("F");
-			jsonObject.setDetail("Fail to delete item due to : " + e.getMessage());
+			jsonObject.setDetail("Fail to change item due to : " + e.getMessage());
 			logger.error("changeDefaultUserAddress() failed with error: " + e.getMessage());
 		}
 
@@ -186,13 +186,16 @@ public class UserController {
 			int successFlag = loginDAO.updateLocalUserPassword(userId, newHashPassword, newSalt);
 			if (successFlag == 1) {
 				jsonObject.setCode("S");
+				logger.info("changePassword() success");
 			} else {
 				jsonObject.setCode("F");
-				jsonObject.setDetail("Failed to change password,please contact support");
+				jsonObject.setDetail("Failed to change password, please contact support");
+				logger.error("changePassword() failed with error: unknown");
 			}
 		} else {
-			jsonObject.setCode("F");
+			jsonObject.setCode("S");
 			jsonObject.setDetail("Wrong Password");
+			logger.error("changePassword() failed with error: wrong password entered");
 		}
 		return jsonObject;
 	}
