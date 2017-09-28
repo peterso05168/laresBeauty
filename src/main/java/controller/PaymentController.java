@@ -14,12 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stripe.Stripe;
-import com.stripe.exception.APIConnectionException;
 import com.stripe.exception.APIException;
-import com.stripe.exception.AuthenticationException;
-import com.stripe.exception.CardException;
-import com.stripe.exception.InvalidRequestException;
-import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
 import com.stripe.model.Customer;
 
@@ -69,7 +64,7 @@ public class PaymentController {
 		return jsonResult;
 	}
 
-	private boolean chargeCustomer(int price, String token) throws StripeException {
+	private boolean chargeCustomer(int price, String token) throws Exception {
 		logger.info("chargeCustomer() start");
 		// Set your secret key: remember to change this to your live secret key in
 		// production
@@ -86,8 +81,7 @@ public class PaymentController {
 		Customer customer;
 		try {
 			customer = Customer.create(customerParams);
-		} catch (AuthenticationException | InvalidRequestException | APIConnectionException | CardException
-				| APIException e) {
+		} catch (Exception e) {
 			logger.error("chargeCustomer() failed with error: " + e.getMessage()); 
 			throw e;
 		}
@@ -100,8 +94,7 @@ public class PaymentController {
 		Charge charge;
 		try {
 			charge = Charge.create(chargeParams);
-		} catch (AuthenticationException | InvalidRequestException | APIConnectionException | CardException
-				| APIException e) {
+		} catch (APIException e) {
 			logger.error("chargeCustomer() failed with error: " + e.getMessage()); 
 			throw e;
 		}

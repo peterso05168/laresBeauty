@@ -3,7 +3,7 @@ package jsonobject;
 public class JSONRegister {
 
 	private String username;
-	private Integer user_id;
+	private Integer userId;
 
 	public String getUsername() {
 		return username;
@@ -13,12 +13,12 @@ public class JSONRegister {
 		this.username = username;
 	}
 
-	public Integer getUser_id() {
-		return user_id;
+	public Integer getUserId() {
+		return userId;
 	}
 
-	public void setUser_id(Integer user_id) {
-		this.user_id = user_id;
+	public void setUserId(Integer userId) {
+		this.userId = userId;
 	}
 
 }

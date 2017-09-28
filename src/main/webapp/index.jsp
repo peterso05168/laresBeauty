@@ -168,7 +168,6 @@
 	  </div>
 	</form>
 </body>
-
 <script>
 	var getUrlParameter = function getUrlParameter(sParam) {
 	    var sPageURL = decodeURIComponent(window.location.search.substring(1)),
@@ -177,10 +176,10 @@
 	        i;
 	
 	    for (i = 0; i < sURLVariables.length; i++) {
-	        sParameterName = sURLVariables[i].split('=');
-	
-	        if (sParameterName[0] === sParam) {
-	            return sParameterName[1] === undefined ? true : sParameterName[1];
+			let index = sURLVariables[i].indexOf("=");
+			sParameterName = sURLVariables[i].substring(0, index);
+	        if (sParameterName === sParam) {
+	            return sURLVariables[i].substring(index) === undefined ? true : sURLVariables[i].substring(index).substring(1);
 	        }
 	    }
 	};
@@ -271,13 +270,12 @@
 		var url = 'http://localhost:8080/laresBeauty/payment/checkout';
 		
 		var amend_detail_arr = [];
+		let decodedStr = window.atob(getUrlParameter('amend_detail'));
 		
-		let product_detail = {
-			product_id: 1,
-			product_quantity: 1
+		let jsonArray = JSON.parse(decodedStr);
+		for (i = 0; i < jsonArray.length; i++) {
+			amend_detail_arr.push(JSON.stringify(jsonArray[i]));
 		}
-		amend_detail_arr.push(JSON.stringify(product_detail));
-		amend_detail_arr.push(JSON.stringify(product_detail));
 
 		var formData = new FormData();    
 		formData.append('user_id', getUrlParameter('user_id'));
@@ -286,6 +284,11 @@
 		formData.append('stripeToken', token);
 		formData.append('amend_detail', amend_detail_arr);
 
+		// Display the key/value pairs
+		for (var pair of formData.entries()) {
+		    console.log(pair[0]+ ', ' + pair[1]); 
+		}
+		
 		$.ajax({
 		  url: url,
 		  data: formData,
@@ -294,7 +297,8 @@
 		  type: 'POST',
 		  success: function(data){
 		    alert(data);
-		  }
+		    window.postMessage(JSON.stringify(data), '*');
+		 }
 		});
 	}
 

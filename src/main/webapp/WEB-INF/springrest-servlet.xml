@@ -1,4 +1,3 @@
-<<<<<<< Upstream, based on branch 'master' of https://github.com/peterso05168/laresBeauty.git
 <beans xmlns="http://www.springframework.org/schema/beans"
  xmlns:context="http://www.springframework.org/schema/context"
  xmlns:tx="http://www.springframework.org/schema/tx"
@@ -71,78 +70,5 @@
 <bean id="authInterceptorDAO" class="dao.AuthInterceptorDAO">  
   <property name="template" ref="jt"></property>  
 </bean>
-=======
-<beans xmlns="http://www.springframework.org/schema/beans"
- xmlns:context="http://www.springframework.org/schema/context"
- xmlns:tx="http://www.springframework.org/schema/tx"
- xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- xsi:schemaLocation=" http://www.springframework.org/schema/beans 
- http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
- http://www.springframework.org/schema/context 
- http://www.springframework.org/schema/context/spring-context-3.0.xsd 
- http://www.springframework.org/schema/mvc 
- http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
- http://www.springframework.org/schema/tx
- http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
- 
-<mvc:annotation-driven/>
-<mvc:resources mapping="/images/**" location="file:/Users/pat/images/"/>
-<context:component-scan base-package="controller" />
- 
-<mvc:interceptors>
-    <mvc:interceptor>
-        <mvc:mapping path="/media/*" />
-        <mvc:mapping path="/shop/*" />
-        <mvc:mapping path="/user/*" />
-        <bean class ="login.AuthInterceptor" />
-    </mvc:interceptor>
-</mvc:interceptors>
 
-<bean id="ds" class="org.springframework.jdbc.datasource.DriverManagerDataSource">  
-  <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"></property>  
-  <property name="url" value="jdbc:mysql://laresbeauty.cujn3yu0uofa.us-east-1.rds.amazonaws.com/lares_beauty?useSSL=false"></property>  
-  <property name="username" value="root"></property>  
-  <property name="password" value="23456789"></property>  
-</bean>  
-  
-<bean id="jt" class="org.springframework.jdbc.core.JdbcTemplate">  
-  <property name="dataSource" ref="ds"></property>  
-</bean>  
-  
-<bean id="tjtJTransactionManager"
-  class="org.springframework.jdbc.datasource.DataSourceTransactionManager"
-  scope="singleton">
-  <property name="dataSource" ref="ds" />
-</bean>
-
-<tx:annotation-driven transaction-manager="tjtJTransactionManager" />
-
-<bean id="productDAO" class="dao.ProductDAO">  
-  <property name="template" ref="jt"></property>  
-</bean>
-
-<bean id="shoppingDetailDAO" class="dao.ShoppingDetailDAO">  
-  <property name="template" ref="jt"></property>  
-</bean>  
-
-<bean id="fileDAO" class="dao.FileDAO">  
-  <property name="imagesFolder" value="/Users/pat/images/"/>
-</bean>  
-
-<bean id="userDAO" class="dao.UserDAO">  
-  <property name="template" ref="jt"></property>  
-</bean>  
-
-<bean id="orderDAO" class="dao.OrderDAO">  
-  <property name="template" ref="jt"></property>  
-</bean>
-
-<bean id="loginDAO" class="dao.LoginDAO">  
-  <property name="template" ref="jt"></property>  
-</bean>
-
-<bean id="authInterceptorDAO" class="dao.AuthInterceptorDAO">  
-  <property name="template" ref="jt"></property>  
-</bean>
->>>>>>> 5cc01be add javax mail in pom,mailUtil,forgetpw method in LoginController
 </beans>

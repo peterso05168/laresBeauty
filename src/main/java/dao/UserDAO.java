@@ -49,7 +49,7 @@ public class UserDAO {
 		return successFlag;
 	}
 
-	public int addAddress(Integer userId, String recipientName, String recipientTel, String recipientAddress) {
+	public int addAddress(final Integer userId, final String recipientName, final String recipientTel, final String recipientAddress) {
 		String sqlStr = "INSERT INTO user_address_info (user_id, recipient_name, recipient_address, recipient_tel) VALUES (?, ?, ?, ?) ";
 
 		int successFlag = template.update(sqlStr, new PreparedStatementSetter() {
@@ -64,9 +64,9 @@ public class UserDAO {
 		return successFlag;
 	}
 	
-	public int updateAddress(Integer userAddressInfoId, String recipientName, String recipientTel,
-			String recipientAddress) {
-		String sqlStr = "UPDATE user_address_info SET recipient_name = ?, recipient_addres = ?, recipientTel = ? WHERE user_address_info_id = ? ";
+	public int updateAddress(final Integer userAddressInfoId, final String recipientName, final String recipientTel,
+			final String recipientAddress) {
+		String sqlStr = "UPDATE user_address_info SET recipient_name = ?, recipient_address = ?, recipient_tel = ? WHERE user_address_info_id = ? ";
 
 		int successFlag = template.update(sqlStr, new PreparedStatementSetter() {
 			public void setValues(PreparedStatement preparedStatement) throws SQLException {

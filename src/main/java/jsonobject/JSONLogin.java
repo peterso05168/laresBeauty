@@ -2,26 +2,16 @@ package jsonobject;
 
 public class JSONLogin {
 
-	private String access_token;
-
+	private String accessToken;
 	private String username;
+	private Integer userId;
 
-	private Integer user_id;
-
-	public String getAccess_token() {
-		return access_token;
+	public String getAccessToken() {
+		return accessToken;
 	}
 
-	public void setAccess_token(String access_token) {
-		this.access_token = access_token;
-	}
-
-	public Integer getUser_id() {
-		return user_id;
-	}
-
-	public void setUser_id(Integer user_id) {
-		this.user_id = user_id;
+	public void setAccessToken(String accessToken) {
+		this.accessToken = accessToken;
 	}
 
 	public String getUsername() {
@@ -30,6 +20,14 @@ public class JSONLogin {
 
 	public void setUsername(String username) {
 		this.username = username;
+	}
+
+	public Integer getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Integer userId) {
+		this.userId = userId;
 	}
 
 }

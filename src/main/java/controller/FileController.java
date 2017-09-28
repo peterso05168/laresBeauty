@@ -2,6 +2,7 @@ package controller;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -16,6 +17,7 @@ import util.CommonUtil;
 @RequestMapping(value = "files")
 
 @CrossOrigin
+@Transactional("tjtJTransactionManager")
 @RestController
 public class FileController {
 

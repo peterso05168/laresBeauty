@@ -1,7 +1,10 @@
 package controller;
 
 import jsonobject.JSONLogin;
+import jsonobject.JSONLoginResult;
+import jsonobject.JSONLoginToken;
 import jsonobject.JSONRegister;
+import jsonobject.JSONRegisterResult;
 import jsonobject.JSONResult;
 import login.FBConnection;
 import login.FBGraph;
@@ -11,7 +14,6 @@ import util.MailUtil;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -21,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -35,6 +38,7 @@ import dao.LoginDAO;
 @RequestMapping(value = "login")
 
 @CrossOrigin
+@Transactional("tjtJTransactionManager")
 @RestController
 public class LoginController {
 
@@ -42,12 +46,11 @@ public class LoginController {
 	LoginDAO loginDAO;
 
 	@RequestMapping(value = "/localLogin", method = RequestMethod.POST)
-	public jsonobject.JSONResult localLogin(HttpServletRequest request, HttpServletResponse response,
+	public JSONLoginResult localLogin(HttpServletRequest request, HttpServletResponse response,
 			@RequestParam(value = "username") String username, @RequestParam(value = "password") String password)
 			throws IOException, NoSuchAlgorithmException {
+		JSONLoginResult jsonLoginResult = new JSONLoginResult();
 		JSONLogin jsonLogin = new JSONLogin();
-		List<JSONLogin> login = new ArrayList<JSONLogin>();
-		jsonobject.JSONResult jsonObject = new jsonobject.JSONResult();
 		try {
 			List<UserLocalAuth> getUser = loginDAO.getLocalUser(username);
 			if (!CommonUtil.isNullOrEmpty(getUser) && getUser.size() == 1) {
@@ -68,28 +71,26 @@ public class LoginController {
 						// use base64 encryption to generate token for client
 						String rawLocalAccessToken = (userId + ":" + hashedToken);
 						String localAccessToken = CommonUtil.base64Encryption(rawLocalAccessToken);
-						jsonLogin.setAccess_token(localAccessToken);
+						jsonLogin.setAccessToken(localAccessToken);
 						jsonLogin.setUsername(username);
-						jsonLogin.setUser_id(userId);
-						login.add(jsonLogin);
-						jsonObject.setCode("s");
-						jsonObject.setData(login);
+						jsonLogin.setUserId(userId);
+						jsonLoginResult.setCode("S");
+						jsonLoginResult.setData(jsonLogin);
 					} else {
-						jsonObject.setCode("f");
-						jsonObject.setDetail("Error: cannot get accesstoken.Please Login again");
+						jsonLoginResult.setCode("F");
+						jsonLoginResult.setDetail("Error: cannot get accesstoken.Please Login again");
 					}
 				} else {
-					jsonObject.setCode("f");
-					jsonObject.setDetail("Error: Wrong Username or Password");
+					jsonLoginResult.setCode("F");
+					jsonLoginResult.setDetail("Error: Wrong Username or Password");
 				}
 			} else {
-				jsonObject.setCode("f");
-				jsonObject.setDetail("Error: User not exists");
+				jsonLoginResult.setCode("F");
+				jsonLoginResult.setDetail("Error: User not exists");
 			}
 		} catch (Exception e) {
-			jsonObject.setCode("f");
-			jsonObject.setDetail("Please Contact Support.Error Message: " + e);
-			System.out.println(e);
+			jsonLoginResult.setCode("F");
+			jsonLoginResult.setDetail("Please Contact Support.Error Message: " + e.getMessage());
 		}
 		// try {
 		// Class.forName("com.mysql.cj.jdbc.Driver");
@@ -137,11 +138,11 @@ public class LoginController {
 		// // TODO Auto-generated catch block
 		// e.printStackTrace();
 		// }
-		return jsonObject;
+		return jsonLoginResult;
 	}
 
 	@RequestMapping(value = "/registrationRequest")
-	public jsonobject.JSONResult registrationRequest() {
+	public JSONLoginToken registrationRequest() {
 		// 13digits token
 		// 1,2,3digit = Reminder(2): 3-digit number divided by 13.(((8-76)*13)+2)
 		// 4,5digit is useless;
@@ -156,21 +157,20 @@ public class LoginController {
 		Integer twelveThirteen = (rand.nextInt(90) + 30) / 2;
 		String token = oneTwoThree.toString() + fourFive.toString() + sixSeven.toString()
 				+ eightNineTenEleven.toString() + twelveThirteen.toString();
-		jsonobject.JSONResult registrationToken = new jsonobject.JSONResult();
-		registrationToken.setCode("s");
-		registrationToken.setDetail(token);
+		JSONLoginToken registrationToken = new JSONLoginToken();
+		registrationToken.setCode("S");
+		registrationToken.setData(token);
 		return registrationToken;
 	}
 
 	@RequestMapping(value = "/localRegister", method = RequestMethod.POST)
-	public jsonobject.JSONResult localRegister(HttpServletRequest request, HttpServletResponse response,
+	public JSONRegisterResult localRegister(HttpServletRequest request, HttpServletResponse response,
 			@RequestParam(value = "username") String username, @RequestParam(value = "password") String password,
 			@RequestParam(value = "email") String email,
 			@RequestParam(value = "registration_token") String registrationToken) throws NoSuchAlgorithmException {
 		char[] token = registrationToken.toCharArray();
+		JSONRegisterResult jsonRegResult = new JSONRegisterResult();
 		JSONRegister json = new JSONRegister();
-		List<JSONRegister> register = new ArrayList<JSONRegister>();
-		jsonobject.JSONResult jsonObject = new jsonobject.JSONResult();
 		// 13digits token
 		// 1,2,3digit = Reminder(2): 3-digit number divided by 13.(((8-76)*13)+2)
 		// 4,5digit is useless;
@@ -184,8 +184,8 @@ public class LoginController {
 		if (token.length == 13 && (oneTwoThree % 13) == 2 && (sixSeven % 2) == 1 && (eightNineTenEleven % 83) == 57) {
 			List<UserLocalAuth> localUser = loginDAO.getLocalUser(email);
 			if (!CommonUtil.isNullOrEmpty(localUser)) {
-				jsonObject.setCode("f");
-				jsonObject.setDetail("Username already exists");
+				jsonRegResult.setCode("f");
+				jsonRegResult.setDetail("Username already exists");
 			} else {
 				int userId = loginDAO.createNewLocalUser(email);
 				String salt = CommonUtil.getSalt();
@@ -194,20 +194,19 @@ public class LoginController {
 				int success_local_token = loginDAO.createNewUserLocalTokenRecord(userId);
 				if (success_local_auth == 1 && success_local_token == 1) {
 					json.setUsername(username);
-					json.setUser_id(userId);
-					register.add(json);
-					jsonObject.setCode("s");
-					jsonObject.setData(register);
+					json.setUserId(userId);
+					jsonRegResult.setCode("S");
+					jsonRegResult.setData(json);
 				} else {
-					jsonObject.setCode("f");
-					jsonObject.setDetail("Cannot create user,please try again");
+					jsonRegResult.setCode("F");
+					jsonRegResult.setDetail("Cannot create user,please try again");
 				}
 			}
 		} else {
-			jsonObject.setCode("f");
-			jsonObject.setDetail("Invalid Token,please try again");
+			jsonRegResult.setCode("F");
+			jsonRegResult.setDetail("Invalid Token,please try again");
 		}
-		return jsonObject;
+		return jsonRegResult;
 	}
 
 	@RequestMapping(value = "/fbLogin", method = RequestMethod.POST)
@@ -222,11 +221,10 @@ public class LoginController {
 	}
 
 	@RequestMapping(value = "/fbAuth")
-	public jsonobject.JSONResult fbAuth(HttpServletRequest request, HttpServletResponse response) throws JSONException {
+	public JSONLoginResult fbAuth(HttpServletRequest request, HttpServletResponse response) throws JSONException {
 		System.out.println("fbAUTH STARTED ");
+		JSONLoginResult jsonLoginResult = new JSONLoginResult();
 		JSONLogin jsonLogin = new JSONLogin();
-		List<JSONLogin> login = new ArrayList<JSONLogin>();
-		jsonobject.JSONResult jsonObject = new jsonobject.JSONResult();
 		String code = null;
 		String fbAccessToken = null;
 		int fbexpiresIn = 0;
@@ -235,8 +233,8 @@ public class LoginController {
 		if (code == null || code.equals("")) {
 			fbAccessToken = request.getParameter("token");
 			if (fbAccessToken == null || fbAccessToken.equals("")) {
-				jsonObject.setCode("f");
-				jsonObject.setDetail("Error: cannot get Facebook accesstoken.Please Login again");
+				jsonLoginResult.setCode("F");
+				jsonLoginResult.setDetail("Error: cannot get Facebook accesstoken.Please Login again");
 			}
 		} else {
 			FBConnection fbConnection = new FBConnection();
@@ -246,8 +244,8 @@ public class LoginController {
 				fbAccessToken = FBJSON.getString("access_token");
 				fbexpiresIn = FBJSON.getInt("expires_in");
 			} else {
-				jsonObject.setCode("f");
-				jsonObject.setDetail("Error: cannot decrypt Facebook accesstoken.Please Login again");
+				jsonLoginResult.setCode("F");
+				jsonLoginResult.setDetail("Error: cannot decrypt Facebook accesstoken.Please Login again");
 			}
 		}
 		if (code != null || fbAccessToken != null) {
@@ -283,19 +281,18 @@ public class LoginController {
 								// for client
 								String rawLocalAccessToken = (userId + ":" + hashedToken);
 								String localAccessToken = CommonUtil.base64Encryption(rawLocalAccessToken);
-								jsonLogin.setAccess_token(localAccessToken);
+								jsonLogin.setAccessToken(localAccessToken);
 								jsonLogin.setUsername(username);
-								jsonLogin.setUser_id(userId);
-								login.add(jsonLogin);
-								jsonObject.setCode("s");
-								jsonObject.setData(login);
+								jsonLogin.setUserId(userId);
+								jsonLoginResult.setCode("s");
+								jsonLoginResult.setData(jsonLogin);
 							} else {
-								jsonObject.setCode("f");
-								jsonObject.setDetail("Error: cannot get Facebook accesstoken.Please Login again");
+								jsonLoginResult.setCode("F");
+								jsonLoginResult.setDetail("Error: cannot get Facebook accesstoken.Please Login again");
 							}
 						} else {
-							jsonObject.setCode("f");
-							jsonObject.setDetail("Error: cannot get accesstoken(FB).Please Login again");
+							jsonLoginResult.setCode("F");
+							jsonLoginResult.setDetail("Error: cannot get accesstoken(FB).Please Login again");
 						}
 					} else if (CommonUtil.isNullOrEmpty(userFacebookAuth)) {
 						// create new user who logins via Facebook
@@ -319,22 +316,20 @@ public class LoginController {
 								// for client
 								String rawLocalAccessToken = (newUserId + ":" + hashedToken);
 								String localAccessToken = CommonUtil.base64Encryption(rawLocalAccessToken);
-								jsonLogin.setAccess_token(localAccessToken);
+								jsonLogin.setAccessToken(localAccessToken);
 								jsonLogin.setUsername(username);
-								jsonLogin.setUser_id(newUserId);
-								login.add(jsonLogin);
-								jsonObject.setCode("s");
-								jsonObject.setData(login);
+								jsonLogin.setUserId(newUserId);
+								jsonLoginResult.setCode("S");
+								jsonLoginResult.setData(jsonLogin);
 							}
 						}
 					} else {
-						jsonObject.setCode("f");
-						jsonObject.setDetail("Error: Duplicated Facebook User");
+						jsonLoginResult.setCode("F");
+						jsonLoginResult.setDetail("Error: Duplicated Facebook User");
 					}
 				} catch (Exception e) {
-					jsonObject.setCode("f");
-					jsonObject.setDetail("Please Contact Support.Error Message: " + e);
-					System.out.println(e);
+					jsonLoginResult.setCode("F");
+					jsonLoginResult.setDetail("Please Contact Support.Error Message: " + e.getMessage());
 				}
 				// try {
 				// Class.forName("com.mysql.cj.jdbc.Driver");
@@ -450,12 +445,12 @@ public class LoginController {
 				// }
 
 			} else {
-				jsonObject.setCode("f");
-				jsonObject.setDetail("Error: cannot get Facebook User Detail.Please Login again");
+				jsonLoginResult.setCode("f");
+				jsonLoginResult.setDetail("Error: cannot get Facebook User Detail.Please Login again");
 			}
 
 		}
-		return jsonObject;
+		return jsonLoginResult;
 	}
 
 	protected int getInt(char c) {
