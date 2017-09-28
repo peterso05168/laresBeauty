@@ -2,9 +2,11 @@ package controller;
 
 import jsonobject.JSONLogin;
 import jsonobject.JSONRegister;
+import jsonobject.JSONResult;
 import login.FBConnection;
 import login.FBGraph;
 import util.CommonUtil;
+import util.MailUtil;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import bean.User;
 import bean.UserFacebookAuth;
 import bean.UserLocalAuth;
 import dao.LoginDAO;
@@ -38,7 +41,7 @@ public class LoginController {
 	@Autowired
 	LoginDAO loginDAO;
 
-	@RequestMapping(value = "/localLogin")
+	@RequestMapping(value = "/localLogin", method = RequestMethod.POST)
 	public jsonobject.JSONResult localLogin(HttpServletRequest request, HttpServletResponse response,
 			@RequestParam(value = "username") String username, @RequestParam(value = "password") String password)
 			throws IOException, NoSuchAlgorithmException {
@@ -207,7 +210,7 @@ public class LoginController {
 		return jsonObject;
 	}
 
-	@RequestMapping(value = "/fbLogin")
+	@RequestMapping(value = "/fbLogin", method = RequestMethod.POST)
 	public void fbLogin(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		System.out.println("fbLogin STARTED ");
 		System.out.println("IP: " + request.getRemoteAddr());
@@ -457,5 +460,33 @@ public class LoginController {
 
 	protected int getInt(char c) {
 		return Character.getNumericValue(c);
+	}
+	
+	@RequestMapping(value = "/forgetPassword", method = RequestMethod.POST)
+	public JSONResult forgetPassword(HttpServletRequest request, HttpServletResponse response,
+			@RequestParam(value = "email") String email) throws IOException, NoSuchAlgorithmException {
+		System.out.println("forgetPassword STARTED.");
+		JSONResult jsonObject = new JSONResult();
+		String newPassword = CommonUtil.randomChar();
+		List<User> user = loginDAO.getUserbyEmail(email);
+		Integer userId = user.get(0).getUserId();
+		String newSalt = CommonUtil.getSalt();
+		String newHashPassword = CommonUtil.SHA512Hashing(newPassword, newSalt);
+		int successFlag = loginDAO.updateLocalUserPassword(userId, newHashPassword, newSalt);
+		if (successFlag == 1) {
+			boolean sendMail = MailUtil.MailSender(email, newPassword);
+			if (sendMail) {
+				jsonObject.setCode("S");
+			} else {
+				jsonObject.setCode("F");
+				jsonObject.setDetail("Failed to send reset password email");
+			}
+		} else {
+			jsonObject.setCode("F");
+			jsonObject.setDetail("Failed to change password,please contact support");
+		}
+
+		
+		return jsonObject;
 	}
 }

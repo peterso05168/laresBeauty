@@ -6,6 +6,7 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Random;
 
 public final class CommonUtil {
 
@@ -114,4 +115,16 @@ public final class CommonUtil {
 		}
 		return rawToken;
 	}
+	
+	public static String randomChar() {
+		Random r = new Random();
+        String randomString = "";
+		String alphabet = "1234567890abcdefghijklmnopqrstuvwxyz!@#$%^&*";
+		for (int i = 0; i < 25; i++) {
+			randomString += alphabet.charAt(r.nextInt(alphabet.length()));
+		} 
+        System.out.println(randomString);
+        return randomString;
+	}
 }
+

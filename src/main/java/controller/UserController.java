@@ -178,6 +178,7 @@ public class UserController {
 		logger.info("changePassword() started with userId = " + userId + ", password = " + password + ", newPassword = " + newPassword);
 		JSONResult jsonObject = new JSONResult();
 		List<UserLocalAuth> getUser = loginDAO.getLocalUserById(userId);
+		//if user is not null
 		String salt = getUser.get(0).getSalt();
 		String username = getUser.get(0).getUsername();
 		String hashedPassword = CommonUtil.SHA512Hashing(password, salt);

@@ -27,6 +27,23 @@ public class LoginDAO {
 		this.template = template;
 	}
 
+	public List<User> getUserbyEmail(final String email) {
+		String sqlStr = "SELECT * FROM user WHERE user_email = ?";
+
+		List<User> user = template.query(sqlStr, new PreparedStatementSetter() {
+			public void setValues(PreparedStatement preparedStatement) throws SQLException {
+				preparedStatement.setString(1, email);
+			}
+		}, new RowMapper<User>() {
+			public User mapRow(ResultSet rs, int row) throws SQLException {
+				User e = setUser(rs);
+				return e;
+			}
+		});
+
+		return user;
+	}
+	
 	public List<User> getUser(final Integer userId) {
 		String sqlStr = "SELECT * FROM user WHERE user_id = ?";
 

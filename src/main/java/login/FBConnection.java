@@ -15,7 +15,7 @@ import org.json.JSONObject;
 public class FBConnection {
 	public static final String FB_APP_ID = "501946813491856";
 	public static final String FB_APP_SECRET = "9e6dc725ff5bc805124226341b8705d3";
-	public static final String REDIRECT_URI = "http://localhost:8080/laresBeauty/login/fbAuth";
+	public static final String REDIRECT_URI = "http://laresbeautyenvironment.iuru2gpsv2.us-east-1.elasticbeanstalk.com/login/fbAuth";
 
 	static String accessToken = "";
 
