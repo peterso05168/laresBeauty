@@ -165,7 +165,7 @@ public class LoginController {
 
 	@RequestMapping(value = "/local_register", method = RequestMethod.POST)
 	public JSONRegisterResult localRegister(HttpServletRequest request, HttpServletResponse response,
-			@RequestParam(value = "username") String username, @RequestParam(value = "password") String password,
+		    @RequestParam(value = "password") String password,
 			@RequestParam(value = "email") String email,
 			@RequestParam(value = "registration_token") String registrationToken) {
 		char[] token = registrationToken.toCharArray();
@@ -199,7 +199,7 @@ public class LoginController {
 				int success_local_auth = loginDAO.createNewUserLocalAuth(email, hashedPassword, userId, salt);
 				int success_local_token = loginDAO.createNewUserLocalTokenRecord(userId);
 				if (success_local_auth == 1 && success_local_token == 1) {
-					json.setUsername(username);
+					
 					json.setUserId(userId);
 					jsonRegResult.setCode("S");
 					jsonRegResult.setData(json);
