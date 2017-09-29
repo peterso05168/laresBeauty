@@ -34,6 +34,7 @@ import bean.User;
 import bean.UserFacebookAuth;
 import bean.UserLocalAuth;
 import dao.LoginDAO;
+import org.apache.log4j.Logger;
 
 @RequestMapping(value = "login")
 
@@ -42,6 +43,8 @@ import dao.LoginDAO;
 @RestController
 public class LoginController {
 
+	private static final Logger logger = Logger.getLogger(LoginController.class);
+	
 	@Autowired
 	LoginDAO loginDAO;
 
@@ -49,8 +52,10 @@ public class LoginController {
 	public JSONLoginResult localLogin(HttpServletRequest request, HttpServletResponse response,
 			@RequestParam(value = "username") String username, @RequestParam(value = "password") String password)
 			 {
+		logger.info("localLogin started.");
 		JSONLoginResult jsonLoginResult = new JSONLoginResult();
 		JSONLogin jsonLogin = new JSONLogin();
+		Integer userId = null;
 		try {
 			List<UserLocalAuth> getUser = loginDAO.getLocalUser(username);
 			if (!CommonUtil.isNullOrEmpty(getUser) && getUser.size() == 1) {
@@ -58,15 +63,14 @@ public class LoginController {
 				String hashedPassword = CommonUtil.SHA512Hashing(password, salt);
 				List<UserLocalAuth> userLocalAuth = loginDAO.localAuth(username, hashedPassword);
 				if (!CommonUtil.isNullOrEmpty(userLocalAuth) && userLocalAuth.size() == 1) {
-					int userId = userLocalAuth.get(0).getUserId();
+					userId = userLocalAuth.get(0).getUserId();
 					Timestamp lastAccessTime = new Timestamp(System.currentTimeMillis());
 					int expires = 5;
 					String newSalt = CommonUtil.getSalt();
 					String newSalt2 = CommonUtil.getSalt();
 					String token = (userId + ":" + newSalt + ":" + newSalt2);
 					String hashedToken = CommonUtil.SHA256Hashing(token, newSalt);
-
-					int successFlag = loginDAO.updateUserLocalToken(userId, hashedToken, expires, lastAccessTime);
+                    int successFlag = loginDAO.updateUserLocalToken(userId, hashedToken, expires, lastAccessTime);
 					if (successFlag == 1) {
 						// use base64 encryption to generate token for client
 						String rawLocalAccessToken = (userId + ":" + hashedToken);
@@ -76,27 +80,34 @@ public class LoginController {
 						jsonLogin.setUserId(userId);
 						jsonLoginResult.setCode("S");
 						jsonLoginResult.setData(jsonLogin);
+						logger.info("User " + username + " (id: " + userId + ") has successfully logged in.");
 					} else {
 						jsonLoginResult.setCode("F");
 						jsonLoginResult.setDetail("Error: cannot get accesstoken.Please Login again");
+						logger.error("Error: cannot get accesstoken(User id: " + userId + ")");
 					}
 				} else {
 					jsonLoginResult.setCode("F");
 					jsonLoginResult.setDetail("Error: Wrong Username or Password");
+					logger.error("Error: Wrong Username or Password(User id: " + userId + ")");
 				}
 			} else {
 				jsonLoginResult.setCode("F");
-				jsonLoginResult.setDetail("Error: User not exists");
+				jsonLoginResult.setDetail("Error: User do not exist");
+				logger.error("Error: User do not exist(User id: " + userId + ")");
 			}
 		} catch (Exception e) {
 			jsonLoginResult.setCode("F");
 			jsonLoginResult.setDetail("Please Contact Support.Error Message: " + e.getMessage());
+			logger.error("Please Contact Support.Error Message: " + e.getMessage() + "(User id: " + userId + ")");
 		}
+		logger.info("localLogin ended.");
 		return jsonLoginResult;
 	}
 
 	@RequestMapping(value = "/get_registration_token")
 	public JSONLoginToken getRegistrationToken() {
+		logger.info("getRegistrationToken started.");
 		// 13digits token
 		// 1,2,3digit = Reminder(2): 3-digit number divided by 13.(((8-76)*13)+2)
 		// 4,5digit is useless;
@@ -114,6 +125,7 @@ public class LoginController {
 		JSONLoginToken registrationToken = new JSONLoginToken();
 		registrationToken.setCode("S");
 		registrationToken.setData(token);
+		logger.info("getRegistrationToken ended.");
 		return registrationToken;
 	}
 
@@ -122,6 +134,7 @@ public class LoginController {
 		    @RequestParam(value = "password") String password,
 			@RequestParam(value = "email") String email,
 			@RequestParam(value = "registration_token") String registrationToken) {
+		logger.info("localRegister started.");
 		char[] token = registrationToken.toCharArray();
 		JSONRegisterResult jsonRegResult = new JSONRegisterResult();
 		JSONRegister json = new JSONRegister();
@@ -139,7 +152,8 @@ public class LoginController {
 			List<UserLocalAuth> localUser = loginDAO.getLocalUser(email);
 			if (!CommonUtil.isNullOrEmpty(localUser)) {
 				jsonRegResult.setCode("F");
-				jsonRegResult.setDetail("Username already exists");
+				jsonRegResult.setDetail("Username(email) already exists");
+				logger.error("Username(email) already exists");
 			} else {
 				int userId = loginDAO.createNewLocalUser(email);
 				String salt = "";
@@ -147,7 +161,7 @@ public class LoginController {
 					salt = CommonUtil.getSalt();
 				} catch (NoSuchAlgorithmException e) {
 					// TODO Auto-generated catch block
-					e.printStackTrace();
+					logger.error("CommonUtil.getSalt() error: " + e);
 				}
 				String hashedPassword = CommonUtil.SHA512Hashing(password, salt);
 				int success_local_auth = loginDAO.createNewUserLocalAuth(email, hashedPassword, userId, salt);
@@ -157,21 +171,25 @@ public class LoginController {
 					json.setUserId(userId);
 					jsonRegResult.setCode("S");
 					jsonRegResult.setData(json);
+					logger.error("User Registration succeed. User Id: " + userId);
 				} else {
 					jsonRegResult.setCode("F");
 					jsonRegResult.setDetail("Cannot create user,please try again");
+					logger.error("Cannot create user,please try again");
 				}
 			}
 		} else {
 			jsonRegResult.setCode("F");
-			jsonRegResult.setDetail("Invalid Token,please try again");
+			jsonRegResult.setDetail("Invalid Registration Token,please try again");
+			logger.error("Invalid Registration Token,please try again");
 		}
+		logger.info("localRegister ended.");
 		return jsonRegResult;
 	}
 
 	@RequestMapping(value = "/fb_login", method = RequestMethod.POST)
 	public void fbLogin(HttpServletRequest request, HttpServletResponse response){
-		System.out.println("fbLogin STARTED ");
+		logger.info("fbLogin started.");
 		System.out.println("IP: " + request.getRemoteAddr());
 		FBConnection fbConnection = new FBConnection();
 		String redirectUrl = fbConnection.getFBAuthUrl();
@@ -181,25 +199,27 @@ public class LoginController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		System.out.println("IP: " + request.getRemoteAddr());
+        logger.info("IP: " + request.getRemoteAddr());
+        logger.info("fbLogin ended.");
 	}
 
 	@RequestMapping(value = "/fb_auth")
 	public JSONLoginResult fbAuth(HttpServletRequest request, HttpServletResponse response)  {
-		System.out.println("fbAUTH STARTED ");
+		logger.info("fbAuth started.");
 		JSONLoginResult jsonLoginResult = new JSONLoginResult();
 		JSONLogin jsonLogin = new JSONLogin();
 		String code = null;
 		String fbAccessToken = null;
 		int fbexpiresIn = 0;
 		code = request.getParameter("code");
-		System.out.println("code: " + code);
+		Integer userId = null;
 		if (code == null || code.equals("")) {
 			fbAccessToken = request.getParameter("token");
 			if (fbAccessToken == null || fbAccessToken.equals("")) {
 				jsonLoginResult.setCode("F");
 				jsonLoginResult.setDetail("Error: cannot get Facebook accesstoken.Please Login again");
+				logger.error("Error: cannot get Facebook accesstoken.Please Login again");
+				return jsonLoginResult;
 			}
 		} else {
 			FBConnection fbConnection = new FBConnection();
@@ -211,6 +231,8 @@ public class LoginController {
 			} else {
 				jsonLoginResult.setCode("F");
 				jsonLoginResult.setDetail("Error: cannot decrypt Facebook accesstoken.Please Login again");
+				logger.error("Error: cannot decrypt Facebook accesstoken.Please Login again");
+				return jsonLoginResult;
 			}
 		}
 		if (code != null || fbAccessToken != null) {
@@ -227,7 +249,7 @@ public class LoginController {
 					List<UserFacebookAuth> userFacebookAuth = loginDAO.getFacebookUser(facebookId);
 					// check if user exists
 					if (!CommonUtil.isNullOrEmpty(userFacebookAuth) && userFacebookAuth.size() == 1) {
-						int userId = userFacebookAuth.get(0).getUserId();
+						userId = userFacebookAuth.get(0).getUserId();
 						Timestamp lastAccessTime = new Timestamp(System.currentTimeMillis());
 						int expires = 5;
 						String newSalt = CommonUtil.getSalt();
@@ -251,13 +273,18 @@ public class LoginController {
 								jsonLogin.setUserId(userId);
 								jsonLoginResult.setCode("s");
 								jsonLoginResult.setData(jsonLogin);
+								logger.info("User(" + username + ")(id: " + userId + ") has successfully logged in");
 							} else {
 								jsonLoginResult.setCode("F");
-								jsonLoginResult.setDetail("Error: cannot get Facebook accesstoken.Please Login again");
+								jsonLoginResult.setDetail("Error: cannot update Facebook accesstoken.Please Login again");
+								logger.error("Error: cannot update Facebook accesstoken.Please Login again.(user id: " + userId + ")");
+								return jsonLoginResult;
 							}
 						} else {
 							jsonLoginResult.setCode("F");
-							jsonLoginResult.setDetail("Error: cannot get accesstoken(FB).Please Login again");
+							jsonLoginResult.setDetail("Error: cannot get accesstoken(FB login user).Please Login again");
+							logger.error("Error: cannot get accesstoken(FB login user).Please Login again.(user id: " + userId + ")");
+							return jsonLoginResult;
 						}
 					} else if (CommonUtil.isNullOrEmpty(userFacebookAuth)) {
 						// create new user who logins via Facebook
@@ -286,21 +313,29 @@ public class LoginController {
 								jsonLogin.setUserId(newUserId);
 								jsonLoginResult.setCode("S");
 								jsonLoginResult.setData(jsonLogin);
+								logger.info("User(" + username + ")(id: " + newUserId + ") has successfully logged in");
 							}
 						}
 					} else {
 						jsonLoginResult.setCode("F");
 						jsonLoginResult.setDetail("Error: Duplicated Facebook User");
+						logger.error("Error: cannot get accesstoken(FB login user).Please Login again.(user id: " + userId + ")");
+						return jsonLoginResult;
+						
 					}
 				} catch (Exception e) {
 					jsonLoginResult.setCode("F");
 					jsonLoginResult.setDetail("Please Contact Support.Error Message: " + e.getMessage());
+					logger.error("Please Contact Support.Error Message: " + e.getMessage() + "(user id: " + userId + ")");
+					return jsonLoginResult;
 				}
 		
 
 			} else {
 				jsonLoginResult.setCode("f");
 				jsonLoginResult.setDetail("Error: cannot get Facebook User Detail.Please Login again");
+				logger.error("Error: cannot get Facebook User Detail.Please Login again.(UserId: " + userId + ")");
+				return jsonLoginResult;
 			}
 
 		}
@@ -313,18 +348,21 @@ public class LoginController {
 	
 	@RequestMapping(value = "/forget_password", method = RequestMethod.POST)
 	public JSONResult forgetPassword(HttpServletRequest request, HttpServletResponse response,
-			@RequestParam(value = "email") String email)  {
-		System.out.println("forgetPassword STARTED.");
+			@RequestParam(value = "user_email") String email)  {
+		logger.info("forgetPassword started.");
+		email = email.trim();
+		Integer userId = null;
 		JSONResult jsonObject = new JSONResult();
 		String newPassword = CommonUtil.randomChar();
 		List<User> user = loginDAO.getUserbyEmail(email);
-		Integer userId = user.get(0).getUserId();
+		if (!CommonUtil.isNullOrEmpty(user) && user.size() == 1) {
+		userId = user.get(0).getUserId();
 		String newSalt = "";
 		try {
 			newSalt = CommonUtil.getSalt();
 		} catch (NoSuchAlgorithmException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("CommonUtil.getSalt() error: " + e);
 		}
 		String newHashPassword = CommonUtil.SHA512Hashing(newPassword, newSalt);
 		int successFlag = loginDAO.updateLocalUserPassword(userId, newHashPassword, newSalt);
@@ -332,16 +370,23 @@ public class LoginController {
 			boolean sendMail = MailUtil.MailSender(email, newPassword);
 			if (sendMail) {
 				jsonObject.setCode("S");
+				logger.info("User password is reset and email is sent(UserId: " + userId + ")");
 			} else {
 				jsonObject.setCode("F");
 				jsonObject.setDetail("Failed to send reset password email");
+				logger.error("Failed to send reset password email,please contact support.(UserId: " + userId + ")");
 			}
 		} else {
 			jsonObject.setCode("F");
 			jsonObject.setDetail("Failed to change password,please contact support");
+			logger.error("Failed to change password,please contact support.(UserId: " + userId + ")");
 		}
-
-		
+		} else {
+			jsonObject.setCode("F");
+			jsonObject.setDetail("User with email(" + email + ") does not exist.");
+			logger.error("Failed to change password,please contact support.(UserId: " + userId + ")");
+		}
+		logger.info("forgetPassword ended.");
 		return jsonObject;
 	}
 }

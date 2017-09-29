@@ -173,7 +173,7 @@ public class UserController {
 		return jsonObject;
 	}
 
-	@RequestMapping(value = "changePassword", method = RequestMethod.POST, headers = "Accept=application/json")
+	@RequestMapping(value = "change_password", method = RequestMethod.POST, headers = "Accept=application/json")
 	public JSONResult changePassword(@RequestParam(value = "user_id") Integer userId,
 			@RequestParam(value = "password") String password, @RequestParam(value = "new_password") String newPassword)
 			throws NoSuchAlgorithmException {
@@ -198,7 +198,7 @@ public class UserController {
 				logger.error("changePassword() failed with error: unknown");
 			}
 		} else {
-			jsonObject.setCode("S");
+			jsonObject.setCode("F");
 			jsonObject.setDetail("Wrong Password");
 			logger.error("changePassword() failed with error: wrong password entered");
 		}
