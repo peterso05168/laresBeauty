@@ -123,7 +123,16 @@ public final class CommonUtil {
 		for (int i = 0; i < 25; i++) {
 			randomString += alphabet.charAt(r.nextInt(alphabet.length()));
 		} 
-        System.out.println(randomString);
+        return randomString;
+	}
+	
+	public static String randomCharSalt() {
+		Random r = new Random();
+        String randomString = "";
+		String alphabet = "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*";
+		for (int i = 0; i < 20; i++) {
+			randomString += alphabet.charAt(r.nextInt(alphabet.length()));
+		} 
         return randomString;
 	}
 }

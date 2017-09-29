@@ -157,12 +157,12 @@ public class LoginController {
 			} else {
 				int userId = loginDAO.createNewLocalUser(email);
 				String salt = "";
-				try {
-					salt = CommonUtil.getSalt();
-				} catch (NoSuchAlgorithmException e) {
-					// TODO Auto-generated catch block
-					logger.error("CommonUtil.getSalt() error: " + e);
-				}
+//				try {
+					salt = CommonUtil.randomCharSalt();
+//				} catch (NoSuchAlgorithmException e) {
+//					// TODO Auto-generated catch block
+//					logger.error("CommonUtil.getSalt() error: " + e);
+//				}
 				String hashedPassword = CommonUtil.SHA512Hashing(password, salt);
 				int success_local_auth = loginDAO.createNewUserLocalAuth(email, hashedPassword, userId, salt);
 				int success_local_token = loginDAO.createNewUserLocalTokenRecord(userId);
@@ -358,12 +358,11 @@ public class LoginController {
 		if (!CommonUtil.isNullOrEmpty(user) && user.size() == 1) {
 		userId = user.get(0).getUserId();
 		String newSalt = "";
-		try {
-			newSalt = CommonUtil.getSalt();
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			logger.error("CommonUtil.getSalt() error: " + e);
-		}
+			newSalt = CommonUtil.randomCharSalt();
+//		} catch (NoSuchAlgorithmException e) {
+//			// TODO Auto-generated catch block
+//			logger.error("CommonUtil.getSalt() error: " + e);
+//		}
 		String newHashPassword = CommonUtil.SHA512Hashing(newPassword, newSalt);
 		int successFlag = loginDAO.updateLocalUserPassword(userId, newHashPassword, newSalt);
 		if (successFlag == 1) {

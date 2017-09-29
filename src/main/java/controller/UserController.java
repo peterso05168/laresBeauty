@@ -186,7 +186,7 @@ public class UserController {
 		String hashedPassword = CommonUtil.SHA512Hashing(password, salt);
 		List<UserLocalAuth> userLocalAuth = loginDAO.localAuth(username, hashedPassword);
 		if (!CommonUtil.isNullOrEmpty(userLocalAuth) && userLocalAuth.size() == 1) {
-			String newSalt = CommonUtil.getSalt();
+			String newSalt = CommonUtil.randomCharSalt();
 			String newHashPassword = CommonUtil.SHA512Hashing(newPassword, newSalt);
 			int successFlag = loginDAO.updateLocalUserPassword(userId, newHashPassword, newSalt);
 			if (successFlag == 1) {
