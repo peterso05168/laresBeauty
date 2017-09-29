@@ -20,7 +20,7 @@ import java.util.Random;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.json.JSONException;
+
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,10 +45,10 @@ public class LoginController {
 	@Autowired
 	LoginDAO loginDAO;
 
-	@RequestMapping(value = "/localLogin", method = RequestMethod.POST)
+	@RequestMapping(value = "/local_login", method = RequestMethod.POST)
 	public JSONLoginResult localLogin(HttpServletRequest request, HttpServletResponse response,
 			@RequestParam(value = "username") String username, @RequestParam(value = "password") String password)
-			throws IOException, NoSuchAlgorithmException {
+			 {
 		JSONLoginResult jsonLoginResult = new JSONLoginResult();
 		JSONLogin jsonLogin = new JSONLogin();
 		try {
@@ -141,8 +141,8 @@ public class LoginController {
 		return jsonLoginResult;
 	}
 
-	@RequestMapping(value = "/registrationRequest")
-	public JSONLoginToken registrationRequest() {
+	@RequestMapping(value = "/get_registration_token")
+	public JSONLoginToken getRegistrationToken() {
 		// 13digits token
 		// 1,2,3digit = Reminder(2): 3-digit number divided by 13.(((8-76)*13)+2)
 		// 4,5digit is useless;
@@ -163,11 +163,11 @@ public class LoginController {
 		return registrationToken;
 	}
 
-	@RequestMapping(value = "/localRegister", method = RequestMethod.POST)
+	@RequestMapping(value = "/local_register", method = RequestMethod.POST)
 	public JSONRegisterResult localRegister(HttpServletRequest request, HttpServletResponse response,
 			@RequestParam(value = "username") String username, @RequestParam(value = "password") String password,
 			@RequestParam(value = "email") String email,
-			@RequestParam(value = "registration_token") String registrationToken) throws NoSuchAlgorithmException {
+			@RequestParam(value = "registration_token") String registrationToken) {
 		char[] token = registrationToken.toCharArray();
 		JSONRegisterResult jsonRegResult = new JSONRegisterResult();
 		JSONRegister json = new JSONRegister();
@@ -188,7 +188,13 @@ public class LoginController {
 				jsonRegResult.setDetail("Username already exists");
 			} else {
 				int userId = loginDAO.createNewLocalUser(email);
-				String salt = CommonUtil.getSalt();
+				String salt = "";
+				try {
+					salt = CommonUtil.getSalt();
+				} catch (NoSuchAlgorithmException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				String hashedPassword = CommonUtil.SHA512Hashing(password, salt);
 				int success_local_auth = loginDAO.createNewUserLocalAuth(email, hashedPassword, userId, salt);
 				int success_local_token = loginDAO.createNewUserLocalTokenRecord(userId);
@@ -209,19 +215,24 @@ public class LoginController {
 		return jsonRegResult;
 	}
 
-	@RequestMapping(value = "/fbLogin", method = RequestMethod.POST)
-	public void fbLogin(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	@RequestMapping(value = "/fb_login", method = RequestMethod.POST)
+	public void fbLogin(HttpServletRequest request, HttpServletResponse response){
 		System.out.println("fbLogin STARTED ");
 		System.out.println("IP: " + request.getRemoteAddr());
 		FBConnection fbConnection = new FBConnection();
 		String redirectUrl = fbConnection.getFBAuthUrl();
-		response.sendRedirect(redirectUrl);
+		try {
+			response.sendRedirect(redirectUrl);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		System.out.println("IP: " + request.getRemoteAddr());
 	}
 
-	@RequestMapping(value = "/fbAuth")
-	public JSONLoginResult fbAuth(HttpServletRequest request, HttpServletResponse response) throws JSONException {
+	@RequestMapping(value = "/fb_auth")
+	public JSONLoginResult fbAuth(HttpServletRequest request, HttpServletResponse response)  {
 		System.out.println("fbAUTH STARTED ");
 		JSONLoginResult jsonLoginResult = new JSONLoginResult();
 		JSONLogin jsonLogin = new JSONLogin();
@@ -331,118 +342,7 @@ public class LoginController {
 					jsonLoginResult.setCode("F");
 					jsonLoginResult.setDetail("Please Contact Support.Error Message: " + e.getMessage());
 				}
-				// try {
-				// Class.forName("com.mysql.cj.jdbc.Driver");
-				// Connection con = DriverManager.getConnection(
-				// "jdbc:mysql://127.0.0.1:3306/lares_beauty?autoReconnect=true&useSSL=false",
-				// "root",
-				// "123456");
-				// if (con != null) {
-				// System.out.println("Connected to the database");
-				// }
-				// PreparedStatement selectUser = con
-				// .prepareStatement("select * from user_facebook_auth
-				// where facebook_id = ?");
-				// selectUser.setString(1,
-				// fbProfileData.getString("id"));
-				// ResultSet rsExistUser = selectUser.executeQuery();
-				// if (rsExistUser.next()) {
-				// System.out.println("User exists ");
-				// int userId = rsExistUser.getInt("user_id");
-				// Timestamp now = new
-				// Timestamp(System.currentTimeMillis());
-				// TokenHashing newHash = new TokenHashing();
-				// String newSalt = newHash.getSalt();
-				// String newSalt2 = newHash.getSalt();
-				// String token = (userId + ":" + newSalt + ":" +
-				// newSalt2);
-				// String hashedToken = newHash.hash(token, newSalt);
-				// // update user's local auth info
-				// PreparedStatement updateLocal = con.prepareStatement(
-				// "UPDATE user_access_token SET user_local_token = ?,
-				// token_expire_time = ?, last_access_time = ? WHERE
-				// user_id = ?;");
-				// updateLocal.setString(1, hashedToken);
-				// updateLocal.setString(2, "5");
-				// updateLocal.setTimestamp(3, now);
-				// updateLocal.setInt(4, userId);
-				// updateLocal.execute();
-				// // update user's facebook auth info
-				// PreparedStatement updateFB = con.prepareStatement(
-				// "UPDATE user_facebook_auth SET facebook_access_token
-				// = ?, facebook_expires = ? WHERE user_id = ?;");
-				// updateFB.setString(1, fbAccessToken);
-				// updateFB.setInt(2, fbexpiresIn);
-				// updateFB.setInt(3, userId);
-				// updateFB.execute();
-				// // use base64 encryption to generate token for client
-				// String rawAccessToken = (userId + ":" + hashedToken);
-				// String localAccessToken =
-				// Base64Encryption.encryption(rawAccessToken);
-				// jsonLogin.setAccessToken(localAccessToken);
-				// jsonLogin.setUsername(username);
-				// } else {
-				// System.out.println("User creates ");
-				// // create new user
-				// PreparedStatement createUserStatement =
-				// con.prepareStatement("INSERT INTO user
-				// ()VALUES();",Statement.RETURN_GENERATED_KEYS);
-				// createUserStatement.execute();
-				// ResultSet rs =
-				// createUserStatement.getGeneratedKeys();
-				// if (rs.next()) {
-				// System.out.println("RS: " + rs);
-				// int newUserId = rs.getInt(1);
-				// System.out.println("new user's id:" + newUserId);
-				// Timestamp now = new
-				// Timestamp(System.currentTimeMillis());
-				// TokenHashing newHash = new TokenHashing();
-				// String newSalt = newHash.getSalt();
-				// String newSalt2 = newHash.getSalt();
-				// String token = (newUserId + ":" + newSalt + ":" +
-				// newSalt2);
-				// String hashedToken = newHash.hash(token, newSalt);
-				// // create new user's local auth record
-				// PreparedStatement createLocal = con.prepareStatement(
-				// "INSERT INTO user_access_token
-				// (user_id,user_local_token, token_expire_time ,
-				// last_access_time) VALUES (?,?,?,?);");
-				// createLocal.setInt(1, newUserId);
-				// createLocal.setString(2, hashedToken);
-				// createLocal.setInt(3, 5);
-				// createLocal.setTimestamp(4, now);
-				// createLocal.execute();
-				// // create new user's facebook auth record
-				// PreparedStatement createFb = con.prepareStatement(
-				// "INSERT INTO user_facebook_auth (user_id,
-				// facebook_id, facebook_access_token ,
-				// facebook_expires) VALUES (?,?,?,?);");
-				// createFb.setInt(1, newUserId);
-				// createFb.setString(2, fbProfileData.getString("id"));
-				// createFb.setString(3, fbAccessToken);
-				// createFb.setInt(4, fbexpiresIn);
-				// createFb.execute();
-				// // use base64 encryption to generate token for
-				// // client
-				// String rawAccessToken = (newUserId + ":" +
-				// hashedToken);
-				// String localAccessToken =
-				// Base64Encryption.encryption(rawAccessToken);
-				// jsonLogin.setAccessToken(localAccessToken);
-				// jsonLogin.setUsername(username);
-				// }
-				// }
-				// con.close();
-				// } catch (SQLException e) {
-				// // TODO Auto-generated catch block
-				// e.printStackTrace();
-				// } catch (ClassNotFoundException e) {
-				// // TODO Auto-generated catch block
-				// e.printStackTrace();
-				// } catch (Exception e) {
-				// // TODO Auto-generated catch block
-				// e.printStackTrace();
-				// }
+		
 
 			} else {
 				jsonLoginResult.setCode("f");
@@ -457,15 +357,21 @@ public class LoginController {
 		return Character.getNumericValue(c);
 	}
 	
-	@RequestMapping(value = "/forgetPassword", method = RequestMethod.POST)
+	@RequestMapping(value = "/forget_password", method = RequestMethod.POST)
 	public JSONResult forgetPassword(HttpServletRequest request, HttpServletResponse response,
-			@RequestParam(value = "email") String email) throws IOException, NoSuchAlgorithmException {
+			@RequestParam(value = "email") String email)  {
 		System.out.println("forgetPassword STARTED.");
 		JSONResult jsonObject = new JSONResult();
 		String newPassword = CommonUtil.randomChar();
 		List<User> user = loginDAO.getUserbyEmail(email);
 		Integer userId = user.get(0).getUserId();
-		String newSalt = CommonUtil.getSalt();
+		String newSalt = "";
+		try {
+			newSalt = CommonUtil.getSalt();
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		String newHashPassword = CommonUtil.SHA512Hashing(newPassword, newSalt);
 		int successFlag = loginDAO.updateLocalUserPassword(userId, newHashPassword, newSalt);
 		if (successFlag == 1) {
