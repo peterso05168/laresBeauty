@@ -184,7 +184,7 @@ public class LoginController {
 		if (token.length == 13 && (oneTwoThree % 13) == 2 && (sixSeven % 2) == 1 && (eightNineTenEleven % 83) == 57) {
 			List<UserLocalAuth> localUser = loginDAO.getLocalUser(email);
 			if (!CommonUtil.isNullOrEmpty(localUser)) {
-				jsonRegResult.setCode("f");
+				jsonRegResult.setCode("F");
 				jsonRegResult.setDetail("Username already exists");
 			} else {
 				int userId = loginDAO.createNewLocalUser(email);
