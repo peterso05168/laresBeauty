@@ -44,11 +44,22 @@ public class UserController {
 				+ ", recipientTel = " + recipientTel + ", recipientAddress = " + recipientAddress);
 		JSONResult jsonObject = new JSONResult();
 
+		boolean hasAddr = false;
+		
+		List<UserAddress> userAddressList = userDAO.getUserAddress(userId);
+		if (!CommonUtil.isNullOrEmpty(userAddressList)) {
+			hasAddr = true;
+		}
+		
 		try {
 
 			int successFlag = 0;
-
-			successFlag += userDAO.addAddress(userId, recipientName, recipientTel, recipientAddress);
+			if (hasAddr) {
+				successFlag += userDAO.addAddress(userId, recipientName, recipientTel, recipientAddress, null);
+			}else {
+				successFlag += userDAO.addAddress(userId, recipientName, recipientTel, recipientAddress, "S");
+			}
+			
 
 			if (successFlag == 0) {
 				jsonObject.setCode("F");

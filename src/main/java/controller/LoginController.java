@@ -271,7 +271,7 @@ public class LoginController {
 								jsonLogin.setAccessToken(localAccessToken);
 								jsonLogin.setUsername(username);
 								jsonLogin.setUserId(userId);
-								jsonLoginResult.setCode("s");
+								jsonLoginResult.setCode("S");
 								jsonLoginResult.setData(jsonLogin);
 								logger.info("User(" + username + ")(id: " + userId + ") has successfully logged in");
 							} else {
@@ -332,7 +332,7 @@ public class LoginController {
 		
 
 			} else {
-				jsonLoginResult.setCode("f");
+				jsonLoginResult.setCode("F");
 				jsonLoginResult.setDetail("Error: cannot get Facebook User Detail.Please Login again");
 				logger.error("Error: cannot get Facebook User Detail.Please Login again.(UserId: " + userId + ")");
 				return jsonLoginResult;

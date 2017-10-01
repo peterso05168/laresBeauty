@@ -49,8 +49,8 @@ public class UserDAO {
 		return successFlag;
 	}
 
-	public int addAddress(final Integer userId, final String recipientName, final String recipientTel, final String recipientAddress) {
-		String sqlStr = "INSERT INTO user_address_info (user_id, recipient_name, recipient_address, recipient_tel) VALUES (?, ?, ?, ?) ";
+	public int addAddress(final Integer userId, final String recipientName, final String recipientTel, final String recipientAddress, final String status) {
+		String sqlStr = "INSERT INTO user_address_info (user_id, recipient_name, recipient_address, recipient_tel, status) VALUES (?, ?, ?, ?, ?) ";
 
 		int successFlag = template.update(sqlStr, new PreparedStatementSetter() {
 			public void setValues(PreparedStatement preparedStatement) throws SQLException {
@@ -58,6 +58,11 @@ public class UserDAO {
 				preparedStatement.setString(2, recipientName);
 				preparedStatement.setString(3, recipientAddress);
 				preparedStatement.setString(4, recipientTel);
+				if (!CommonUtil.isNullOrEmpty(status)) {
+					preparedStatement.setString(5, status);
+				}else {
+					preparedStatement.setString(5, "A");
+				}
 			}
 		});
 

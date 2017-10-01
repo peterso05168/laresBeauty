@@ -2,6 +2,7 @@ package controller;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -18,8 +19,10 @@ import com.stripe.exception.APIException;
 import com.stripe.model.Charge;
 import com.stripe.model.Customer;
 
+import bean.Product;
 import dao.LoginDAO;
 import dao.OrderDAO;
+import dao.ProductDAO;
 import dao.ShoppingDetailDAO;
 import jsonobject.JSONResult;
 import jsonobject.JSONShoppingDetailDTO;
@@ -41,6 +44,9 @@ public class PaymentController {
 	OrderDAO orderDAO;
 
 	@Autowired
+	ProductDAO productDAO;
+	
+	@Autowired
 	ShoppingDetailDAO shoppingDetailDAO;
 
 	@RequestMapping(value = "/checkout")
@@ -53,7 +59,7 @@ public class PaymentController {
 			JSONResult jsonResult = new JSONResult();
 			
 			try {
-				chargeCustomer(price, stripeToken);
+				chargeCustomer(price, stripeToken, productAmendDetail);
 				addOrder(userId, userAddressInfoId, productAmendDetail);
 				jsonResult.setCode("S");
 			}catch (Exception e) {
@@ -61,11 +67,38 @@ public class PaymentController {
 				jsonResult.setDetail(e.getMessage());
 			}
 			
+			logger.info("checkout() success");
 		return jsonResult;
 	}
 
-	private boolean chargeCustomer(int price, String token) throws Exception {
+	private void chargeCustomer(int price, String token, String[] amendDetail) throws Exception {
 		logger.info("chargeCustomer() start");
+		ObjectMapper mapper = new ObjectMapper();
+		int amount = 0;
+		if (!CommonUtil.isNullOrEmpty(amendDetail)) {
+			if (!amendDetail[0].substring(amendDetail[0].length() - 1).equalsIgnoreCase("}")) {
+				String modifiedStr = amendDetail[0] + ", " + amendDetail[1];
+				JSONShoppingDetailDTO dto = mapper.readValue(modifiedStr, JSONShoppingDetailDTO.class);
+
+				List<Product> productList = productDAO.getProductDetail(dto.getProduct_id());
+				Product product = productList.get(0);
+				
+				amount += product.getProductPrice().scaleByPowerOfTen(2).intValueExact() * dto.getProduct_quantity();
+			} else {
+				for (int i = 0; i < amendDetail.length; i++) {
+					JSONShoppingDetailDTO dto = mapper.readValue(amendDetail[i], JSONShoppingDetailDTO.class);
+					
+					List<Product> productList = productDAO.getProductDetail(dto.getProduct_id());
+					Product product = productList.get(0);
+					amount += product.getProductPrice().scaleByPowerOfTen(2).intValueExact() * dto.getProduct_quantity();
+				}
+			}
+		}
+		
+		if (amount != price) {
+			logger.error("chargeCustomer() failed with error: payment amount inconsistent.");
+			throw new Exception("payment amount inconsistent.");
+		}
 		// Set your secret key: remember to change this to your live secret key in
 		// production
 		// See your keys here: https://dashboard.stripe.com/account/apikeys
@@ -100,7 +133,9 @@ public class PaymentController {
 		}
 		if (charge.getPaid()) {
 			logger.info("chargeCustomer() success");
-			return true;
+		}else {
+			logger.error("chargeCustomer() failed with error: payment unsuccess");
+			throw new Exception("payment unsuccess");
 		}
 
 		// // YOUR CODE: Save the customer ID and other info in a database for later.
@@ -112,10 +147,9 @@ public class PaymentController {
 		// chargeParams.put("currency", "hkd");
 		// chargeParams.put("customer", customerId);
 		// Charge charge = Charge.create(chargeParams);
-		return false;
 	}
 
-	private boolean addOrder(int userId, int userAddressInfoId, String[] amendDetail) throws Exception {
+	private void addOrder(int userId, int userAddressInfoId, String[] amendDetail) throws Exception {
 		logger.info("addOrder() start");
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -175,11 +209,10 @@ public class PaymentController {
 		
 
 		if (successFlag == 0) {
-			logger.info("addOrder() failed with error: successFlag = 0");
-			return false;
+			logger.error("addOrder() failed with error: successFlag = 0");
+			throw new Exception("successFlag = 0");
 		} else {
 			logger.info("addOrder() success");
-			return true;
 		}
 
 	}
