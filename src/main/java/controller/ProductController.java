@@ -223,7 +223,7 @@ public class ProductController {
 
 			if (successFlag == 0) {
 				jsonObject.setCode("F");
-				jsonObject.setDetail("Delete item failed, possible due to wrong product_id.");
+				jsonObject.setDetail("Edit item failed, possible due to wrong product_id.");
 				logger.error("editProducts() failed with error: wrong productId");
 			} else {
 				jsonObject.setCode("S");
@@ -231,7 +231,7 @@ public class ProductController {
 			}
 		} catch (Exception e) {
 			jsonObject.setCode("F");
-			jsonObject.setDetail("Fail to delete item due to : " + e.getMessage());
+			jsonObject.setDetail("Fail to edit item due to : " + e.getMessage());
 			logger.error("editProducts() failed with error: " + e.getMessage());
 		}
 
