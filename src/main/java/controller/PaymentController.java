@@ -76,23 +76,27 @@ public class PaymentController {
 		ObjectMapper mapper = new ObjectMapper();
 		int amount = 0;
 		if (!CommonUtil.isNullOrEmpty(amendDetail)) {
-			if (!amendDetail[0].substring(amendDetail[0].length() - 1).equalsIgnoreCase("}")) {
-				String modifiedStr = amendDetail[0] + ", " + amendDetail[1];
+			for (int i = 0; i < amendDetail.length; i = i + 2) {
+				if (i == amendDetail.length) {
+					break;
+				}
+				String modifiedStr = amendDetail[i] + ", " + amendDetail[i+1];
 				JSONShoppingDetailDTO dto = mapper.readValue(modifiedStr, JSONShoppingDetailDTO.class);
 
 				List<Product> productList = productDAO.getProductDetail(dto.getProduct_id());
 				Product product = productList.get(0);
 				
 				amount += product.getProductPrice().scaleByPowerOfTen(2).intValueExact() * dto.getProduct_quantity();
-			} else {
-				for (int i = 0; i < amendDetail.length; i++) {
-					JSONShoppingDetailDTO dto = mapper.readValue(amendDetail[i], JSONShoppingDetailDTO.class);
-					
-					List<Product> productList = productDAO.getProductDetail(dto.getProduct_id());
-					Product product = productList.get(0);
-					amount += product.getProductPrice().scaleByPowerOfTen(2).intValueExact() * dto.getProduct_quantity();
-				}
 			}
+//			{
+//				for (int i = 0; i < amendDetail.length; i++) {
+//					JSONShoppingDetailDTO dto = mapper.readValue(amendDetail[i], JSONShoppingDetailDTO.class);
+//					
+//					List<Product> productList = productDAO.getProductDetail(dto.getProduct_id());
+//					Product product = productList.get(0);
+//					amount += product.getProductPrice().scaleByPowerOfTen(2).intValueExact() * dto.getProduct_quantity();
+//				}
+//			}
 		}
 		
 		if (amount != price) {

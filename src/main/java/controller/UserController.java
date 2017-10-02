@@ -6,6 +6,7 @@ import jsonobject.JSONResult;
 import util.CommonUtil;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -122,9 +123,11 @@ public class UserController {
 				jsonObject.setData(userAddressList);
 				logger.info("getUserAddress() success with return value = " + userAddressList);
 			} else {
-				jsonObject.setCode("F");
+				userAddressList = new ArrayList<UserAddress>();
+				jsonObject.setCode("S");
+				jsonObject.setData(userAddressList);
 				jsonObject.setDetail("No result is found.");
-				logger.error("getUserAddress() failed with error: no result is found");
+				logger.info("getUserAddress() success with return value =  no result is found");
 			}
 		} catch (Exception e) {
 			jsonObject.setCode("F");

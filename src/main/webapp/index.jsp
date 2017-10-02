@@ -18,7 +18,7 @@
 			}
 
 			body {
-			  background: #424770;
+			  background: #f2f2f2;
 			  display: flex;
 			  align-items: center;
 			  min-height: 100%;
@@ -154,21 +154,24 @@
 </head>
 <body>
 	<script src="https://js.stripe.com/v3/"></script>
-	<form>
-	  <label>
-	    <div id="card-element" class="field is-empty"></div>
-	    <span><span>Credit or debit card</span></span>
-	  </label>
-	  <button type="submit">Pay $0.01</button>
-	  <div class="outcome">
-	    <div class="error" role="alert"></div>
-	    <div class="success">
-	      Success! Your Stripe token is <span class="token"></span>
-	    </div>
-	  </div>
-	</form>
+	
+		<form>
+		  <label>
+		    <div id="card-element" class="field is-empty"></div>
+		    <span><span>Credit or debit card</span></span>
+		  </label>
+		  <button id="button" type="submit">Pay $0.01</button>
+		  <div class="outcome">
+		    <div class="error" role="alert"></div>
+		    <div class="success">
+		      Success! Your Stripe token is <span class="token"></span>
+		    </div>
+		  </div>
+		</form>
+	
 </body>
 <script>
+
 	var getUrlParameter = function getUrlParameter(sParam) {
 	    var sPageURL = decodeURIComponent(window.location.search.substring(1)),
 	        sURLVariables = sPageURL.split('&'),
@@ -184,6 +187,9 @@
 	    }
 	};
 
+	var themeColor = getUrlParameter('theme_color');
+	$('#button').css('backgroundColor', themeColor);
+
 	var stripe = Stripe('pk_test_CxZOc0T4PeTGij1D0eRuwdAO');
 	var elements = stripe.elements();
 
@@ -191,7 +197,7 @@
 	  iconStyle: 'solid',
 	  style: {
 	    base: {
-	      iconColor: '#8898AA',
+	      iconColor: themeColor,
 	      color: 'white',
 	      lineHeight: '36px',
 	      fontWeight: 300,
@@ -199,7 +205,7 @@
 	      fontSize: '19px',
 
 	      '::placeholder': {
-	        color: '#8898AA',
+	        color: themeColor,
 	      },
 	    },
 	    invalid: {
@@ -236,8 +242,9 @@
 	  var errorElement = document.querySelector('.error');
 	  successElement.classList.remove('visible');
 	  errorElement.classList.remove('visible');
-
+		
 	  if (result.token) {
+         
 	    // Use the token to create a charge or a customer
 
 	    submit(result.token.id);
@@ -260,14 +267,25 @@
 	  stripe.createToken(card, {
 	  	name: 'wewawa',
 	  }).then(setOutcome);
+        // alert('wen');
 
 	});
 
+    var FormData = function() {
+    	
+    }
+    FormData.prototype.append = function(key, value) {
+        this[key] = value;
+    }
+	FormData.prototype.entries = function() {
+        return [1,2];
+    }
 
 
 	function submit(token) {
+        // alert(token);
 
-		var url = 'http://localhost:8080/laresBeauty/payment/checkout';
+		var url = 'http://61.244.39.220:8080/laresBeauty/payment/checkout';
 		
 		var amend_detail_arr = [];
 		let decodedStr = window.atob(getUrlParameter('amend_detail'));
@@ -276,8 +294,8 @@
 		for (i = 0; i < jsonArray.length; i++) {
 			amend_detail_arr.push(JSON.stringify(jsonArray[i]));
 		}
-
-		var formData = new FormData();    
+		
+		var formData = new FormData();
 		formData.append('user_id', getUrlParameter('user_id'));
 		formData.append('user_address_info_id', getUrlParameter('user_address_info_id'));
 		formData.append('price', getUrlParameter('price'));
@@ -285,20 +303,26 @@
 		formData.append('amend_detail', amend_detail_arr);
 
 		// Display the key/value pairs
-		for (var pair of formData.entries()) {
-		    console.log(pair[0]+ ', ' + pair[1]); 
-		}
+		//for (var pair of formData.entries()) {
+		   // console.log(pair[0]+ ', ' + pair[1]); 
+		//}
 		
+        // alert('最终 ajax');
+        
 		$.ajax({
 		  url: url,
 		  data: formData,
 		  processData: false,
 		  contentType: false,
 		  type: 'POST',
+          dataType: 'JSON',
 		  success: function(data){
-		    alert(data);
-		    window.postMessage(JSON.stringify(data), '*');
-		 }
+		    // alert(JSON.stringify(data));
+		    window.postMessage(JSON.stringify(data));
+          },
+          error: function(err) {
+              alert(JSON.stringify(err))
+          }
 		});
 	}
 

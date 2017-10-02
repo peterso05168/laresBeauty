@@ -41,6 +41,7 @@ public class ProductController {
 	FileDAO fileDAO;
 
 	// FOR TESTING PURPOSE
+	@Deprecated
 	@RequestMapping(value = "featured", method = RequestMethod.GET, headers = "Accept=application/json")
 	public JSONResult getFeaturedProducts() {
 		return null;

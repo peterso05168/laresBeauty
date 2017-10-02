@@ -15,14 +15,14 @@
 <mvc:resources mapping="/images/**" location="file:/Users/pat/images/"/>
 <context:component-scan base-package="controller" />
  
-<mvc:interceptors>
-    <mvc:interceptor>
-        <mvc:mapping path="/media/*" />
+<!-- <mvc:interceptors> -->
+<!--     <mvc:interceptor> -->
+<!--         <mvc:mapping path="/media/*" /> -->
       
         
-        <bean class ="login.AuthInterceptor" />
-    </mvc:interceptor>
-</mvc:interceptors>
+<!--         <bean class ="login.AuthInterceptor" /> -->
+<!--     </mvc:interceptor> -->
+<!-- </mvc:interceptors> -->
 
 <bean id="ds" class="org.springframework.jdbc.datasource.DriverManagerDataSource">  
   <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"></property>  
@@ -64,6 +64,10 @@
 </bean>
 
 <bean id="loginDAO" class="dao.LoginDAO">  
+  <property name="template" ref="jt"></property>  
+</bean>
+
+<bean id="postDAO" class="dao.PostDAO">  
   <property name="template" ref="jt"></property>  
 </bean>
 

@@ -8,6 +8,7 @@ public class Post {
 	private String postContent;
 	private String postImg;
 	private String postType;
+	private String postStatus;
 
 	public int getPostId() {
 		return postId;
@@ -47,6 +48,14 @@ public class Post {
 
 	public void setPostType(String postType) {
 		this.postType = postType;
+	}
+	
+	public String getPostStatus() {
+		return postStatus;
+	}
+
+	public void setPostStatus(String postStatus) {
+		this.postStatus = postStatus;
 	}
 
 	@Override
