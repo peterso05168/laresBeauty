@@ -382,7 +382,7 @@ public class LoginController {
 		} else {
 			jsonObject.setCode("F");
 			jsonObject.setDetail("User with email(" + email + ") does not exist.");
-			logger.error("Failed to change password,please contact support.(UserId: " + userId + ")");
+			logger.error("User with email(" + email + ") does not exist.(UserId: " + userId + ")");
 		}
 		logger.info("forgetPassword ended.");
 		return jsonObject;
